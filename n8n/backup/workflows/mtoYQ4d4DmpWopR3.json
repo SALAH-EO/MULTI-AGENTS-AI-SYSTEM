@@ -1,0 +1,2830 @@
+{
+  "name": "Slack Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "postEphemeral",
+        "channel": "={{ $('Loop Over Items1').item.json.summaryChannel.trim() }}",
+        "user": "={{ $('Loop Over Items1').item.json.user.trim() }}",
+        "text": "Invalid",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Send Invalid Summary Warning",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -20
+      ],
+      "id": "96a4efd5-62fe-4b70-b9af-eb916e673d3f",
+      "executeOnce": false,
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "=0 18 * * 1-5"
+            },
+            {
+              "mode": "custom",
+              "cronExpression": "=59 23 * * 1-5"
+            }
+          ]
+        }
+      },
+      "name": "6PM Check Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -5480,
+        980
+      ],
+      "id": "77bfb380-6da5-4cb2-ab60-70b3d39ad2f4"
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "history",
+        "channelId": "={{ $json.summaryChannel }}",
+        "limit": 3,
+        "filters": {
+          "latest": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+          "oldest": "={{ $now.startOf('day').format('yyyy-MM-dd HH:mm:ss') }}"
+        }
+      },
+      "name": "Get Slack Messages",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -2840,
+        420
+      ],
+      "id": "eafa62d0-7c3a-49ea-a3aa-0477162b8fc0",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.text }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Has Summary?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -2100,
+        600
+      ],
+      "id": "7484494e-9e3b-467d-a752-cf845595fef7"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Loop Over Items3').item.json.channelName }}",
+          "mode": "name"
+        },
+        "columnToMatchOn": "Date",
+        "valueToMatchOn": "={{ $today.format('dd / MM / yyyy') }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "= {{ $json.name }}",
+              "fieldValue": "A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mark Absent in Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -100,
+        1240
+      ],
+      "id": "65c06c60-a9d5-43bc-ad7a-a36b18f8c5f4",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "user",
+        "joinMode": "keepEverything",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -2300,
+        600
+      ],
+      "id": "f75cbfa0-dd7b-44e7-a20c-42d35d8ae0cd",
+      "name": "Merge",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Loop Over Items3').item.json.channelName }}",
+          "mode": "name"
+        },
+        "columnToMatchOn": "Date",
+        "valueToMatchOn": "={{ $today.format('dd / MM / yyyy') }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "= {{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Adding date Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -800,
+        1260
+      ],
+      "id": "afb76da5-2d2a-4135-b49b-eeca1f9518dc",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are evaluating daily work summaries from interns. Your job is to determine if the following text is a legitimate work summary that describes actual tasks completed or work in progress, or if it's just random text submitted to avoid being marked absent.\n\nWork Summary to evaluate:\n{{ $json.text }}\n\nAnalyze the text and respond with ONLY one of these two phrases:\n- \"VALID\" if it appears to be a genuine work summary that mentions specific tasks, projects, or accomplishments.\n- \"NOT VALID\" if it appears to be random text, extremely vague statements, or clearly not related to work activities.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a work summary evaluation assistant. Your only job is to determine if a daily work summary from an intern is legitimate or not. \n\nA VALID work summary must:\n- Mention specific tasks or projects worked on\n- Include some details about progress made\n- Reflect actual work activities\n- Be coherent and professional\n\nA NOT VALID work summary would:\n- Contain random text or gibberish\n- Be extremely vague with no specific details\n- Be completely unrelated to work activities\n- Be too short (less than 15 words)\n- Appear to be written just to avoid being marked absent\n\nRespond ONLY with \"VALID\" or \"NOT VALID\". Do not provide explanations, comments, or any other text in your response."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        -1180,
+        0
+      ],
+      "id": "63079a0e-367b-4360-830c-473c18d7995f",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.7,
+          "numPredict": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        220
+      ],
+      "id": "c404ed36-e17c-486c-9868-0e5ace931f03",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a579e425-75be-4c99-a518-346aac90a2c4",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "NOT VALID",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -700,
+        0
+      ],
+      "id": "dd2668c8-1fc6-4a6a-ad7c-844e94339916",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $now.hour }}",
+              "operation": "equal",
+              "value2": 18
+            }
+          ]
+        }
+      },
+      "name": "6 PM ",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1560,
+        1000
+      ],
+      "id": "b3f61fc5-7166-4ece-b851-ff6525bdf1b1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $now.format('HH:mm') }}",
+              "value2": "23:59"
+            }
+          ]
+        }
+      },
+      "name": "12 AM",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1620,
+        1280
+      ],
+      "id": "7ad77c70-b95f-407f-a563-48201dd014bf"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $now.hour }}",
+              "operation": "equal",
+              "value2": 18
+            }
+          ]
+        }
+      },
+      "name": "6 PM ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1700,
+        300
+      ],
+      "id": "94334e1e-c763-4396-9050-78960dfef5c7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $now.format('HH:mm') }}",
+              "value2": "23:59"
+            }
+          ]
+        }
+      },
+      "name": "12 AM ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1700,
+        720
+      ],
+      "id": "36d010b6-c620-47c8-9552-d58771118acc"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are evaluating daily work summaries from interns. Your job is to determine if the following text is a legitimate work summary that describes actual tasks completed or work in progress, or if it's just random text submitted to avoid being marked absent.\n\nWork Summary to evaluate:\n{{ $json.text }}\n\nAnalyze the text and respond with ONLY one of these two phrases:\n- \"VALID\" if it appears to be a genuine work summary that mentions specific tasks, projects, or accomplishments.\n- \"NOT VALID\" if it appears to be random text, extremely vague statements, or clearly not related to work activities.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a work summary evaluation assistant. Your only job is to determine if a daily work summary from an intern is legitimate or not. \n\nA VALID work summary must:\n- Mention specific tasks or projects worked on\n- Include some details about progress made\n- Reflect actual work activities\n- Be coherent and professional\n\nA NOT VALID work summary would:\n- Contain random text or gibberish\n- Be extremely vague with no specific details\n- Be completely unrelated to work activities\n- Be too short (less than 15 words)\n- Appear to be written just to avoid being marked absent\n\nRespond ONLY with \"VALID\" or \"NOT VALID\". Do not provide explanations, comments, or any other text in your response."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        -1200,
+        520
+      ],
+      "id": "5a4b3883-0ec2-49ca-b7f8-87f817e6e41f",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.7,
+          "numPredict": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        740
+      ],
+      "id": "4a1eee8d-f3ba-423d-a98b-db5cbf4bed06",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a579e425-75be-4c99-a518-346aac90a2c4",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "NOT VALID",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -720,
+        520
+      ],
+      "id": "e77ef277-67f2-454b-bd06-1122c52a6481",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Has Summary?').item.json.channelName }}",
+          "mode": "name"
+        },
+        "columnToMatchOn": "=Date",
+        "valueToMatchOn": "={{ $today.format('dd / MM / yyyy') }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "= {{ $('Has Summary?').item.json.name }}",
+              "fieldValue": "A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mark Absent in Sheet2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -60,
+        500
+      ],
+      "id": "87d30f6d-8421-44c5-bb61-dad100dde395",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Has Summary?').item.json.channelName }}",
+          "mode": "name"
+        },
+        "columnToMatchOn": "Date",
+        "valueToMatchOn": "={{ $today.format('dd / MM / yyyy') }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "= {{ $('Has Summary?').item.json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Adding date Row2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -360,
+        460
+      ],
+      "id": "a5e34b2f-a2e4-481a-9be9-a793539e84e4",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "channels",
+        "options": {}
+      },
+      "id": "458e3410-b765-4d62-a83a-1eb3270382fb",
+      "name": "Item Lists",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 1,
+      "position": [
+        -3440,
+        2140
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://slack.com/api/conversations.list?types=private_channel,public_channel&exclude_archived=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "exclude_archived",
+              "value": "true"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            },
+            {
+              "name": "cursor",
+              "value": "={{ $json.cursor }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "186bff74-c5fb-401d-bfec-b6a170240f31",
+      "name": "Slack: conversations.list",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -3640,
+        2140
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keys": {
+          "key": [
+            {
+              "currentKey": "response_metadata.next_cursor",
+              "newKey": "cursor"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "id": "392c6848-97fd-44a6-8242-66f660216cea",
+      "name": "Rename Keys",
+      "type": "n8n-nodes-base.renameKeys",
+      "typeVersion": 1,
+      "position": [
+        -3240,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "channel",
+              "value": "={{ $json[\"name\"] }}"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "05ad77e8-5c16-412a-ac4a-3be5a8f5dd65",
+      "name": "Channels",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -3040,
+        2140
+      ],
+      "notesInFlow": true,
+      "notes": "DO NOT RENAME!"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.response_metadata.next_cursor }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "300c14ec-bab2-4309-be0b-e5bdfe8b1de2",
+      "name": "IF no more pages",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -3440,
+        2320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allData = [];\n\nfor (let index = 0; index <= $prevNode.runIndex; index++) {\n  allData.push.apply(allData, $(\"Channels\").all(0, index));  // add items up\n};\n\nreturn allData;"
+      },
+      "id": "52bf533f-5266-4621-8c09-d2c1c6cafcb3",
+      "name": "All channels",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -3040,
+        2300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## dependant",
+        "height": 355.41218637992824,
+        "width": 180.5973715651134
+      },
+      "id": "a7315739-8338-41c0-8cdc-0254b4610884",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3080,
+        2080
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "cursor"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6fa76a1c-99f3-4f63-aef8-41765aa292de",
+      "name": "Initial cursor",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -3860,
+        2140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Slack channels",
+        "height": 522.7101449275364,
+        "width": 803.1690821256043
+      },
+      "id": "af650d50-ca63-48d5-bef1-23efb23391b2",
+      "name": "Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3900,
+        2040
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "member",
+        "channelId": "={{ $json.id }}",
+        "returnAll": true
+      },
+      "name": "Get Members",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -1940,
+        2320
+      ],
+      "id": "3982ec8e-e951-4b6d-9e46-31d4d7883b9c",
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "user": "={{ $json.member }}"
+      },
+      "name": "Get User Info",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        2320
+      ],
+      "id": "61edc475-3fc0-44bb-9e85-54d91770ce7b",
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "userName",
+              "value": "= {{ $json[\"real_name\"] }}"
+            },
+            {
+              "name": "userId",
+              "value": "= {{ $json[\"id\"] }}"
+            },
+            {
+              "name": "channelId",
+              "value": "={{ $('Loop Over Items').item.json.id }}"
+            },
+            {
+              "name": "channelName",
+              "value": "={{ $('Filter1').item.json.channel }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        2320
+      ],
+      "id": "c78db275-e78e-41eb-b37e-5c07e715fff0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b312f97-8061-4d85-a6dd-951dafb40fd5",
+              "leftValue": "={{ $json.member }}",
+              "rightValue": "U08NSKNGBEC",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "35b5f157-d913-49dc-99f2-b71ca5a56c14",
+              "leftValue": "={{ $json.member }}",
+              "rightValue": "U08QWJ9AWJY",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1700,
+        2320
+      ],
+      "id": "950c2400-2f58-4879-95a5-d307f922227d",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2400,
+        2300
+      ],
+      "id": "4b59652c-f574-48ee-bf25-831aeb203701",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "282162bb-66a7-4d6a-aebf-a6acb4537b3a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH0KJM",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "81063d9a-b052-4f02-b6eb-93f3ae026533",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH1QMP",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2660,
+        2300
+      ],
+      "id": "5d1233c3-58ac-405e-aa47-d510f543e2e2",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -3220,
+        2140
+      ],
+      "id": "b4af80fd-a292-4d34-842b-609abec203c8",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.channelName }}",
+          "mode": "name"
+        },
+        "columnToMatchOn": "Date",
+        "valueToMatchOn": "Date",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "newColumn",
+              "columnName": "={{ $json.userName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "299f0def-7a1f-4ee3-9d90-f91e6833ca96",
+      "name": "Google Sheets2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -720,
+        1860
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyWeek",
+              "hour": 1,
+              "weekday": "0"
+            }
+          ]
+        }
+      },
+      "name": "Weekly Update",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -4500,
+        2000
+      ],
+      "id": "de671e7e-51cc-41ef-81a0-b45d12c8353c"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "channels",
+        "options": {}
+      },
+      "id": "42fac5f9-bb0d-47dc-9c8a-5183b7dbf970",
+      "name": "Item Lists1",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 1,
+      "position": [
+        -4780,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://slack.com/api/conversations.list?types=private_channel,public_channel&exclude_archived=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "exclude_archived",
+              "value": "true"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            },
+            {
+              "name": "cursor",
+              "value": "={{ $json.cursor }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "56b0c303-fd8a-440f-a0b1-107e5e1beaed",
+      "name": "Slack: conversations.list1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -4980,
+        980
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keys": {
+          "key": [
+            {
+              "currentKey": "response_metadata.next_cursor",
+              "newKey": "cursor"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "id": "1a0166bc-5897-4713-83fd-a10c6da75e11",
+      "name": "Rename Keys1",
+      "type": "n8n-nodes-base.renameKeys",
+      "typeVersion": 1,
+      "position": [
+        -4580,
+        1240
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "channel",
+              "value": "={{ $json[\"name\"] }}"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2f2615a5-0ed0-40e7-b410-4198080b7537",
+      "name": "Channels1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -4380,
+        980
+      ],
+      "notesInFlow": true,
+      "notes": "DO NOT RENAME!"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.response_metadata.next_cursor }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "25dca7d4-15d9-42e0-bff8-f6f00c7cdf4c",
+      "name": "IF no more pages1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -4780,
+        1160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allData = [];\n\nfor (let index = 0; index <= $prevNode.runIndex; index++) {\n  allData.push.apply(allData, $(\"Channels1\").all(0, index));  // add items up\n};\n\nreturn allData;"
+      },
+      "id": "15704d0f-8b10-4781-8dfe-20161033906c",
+      "name": "All channels1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -4380,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "cursor"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2be078a-c056-4269-8045-0a9a7e12b585",
+      "name": "Initial cursor1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -5200,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "member",
+        "channelId": "={{ $json.id }}",
+        "returnAll": true
+      },
+      "name": "Get Members1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -3280,
+        1160
+      ],
+      "id": "1eb8000f-9f1d-4f41-8661-f7614f8ac3e8",
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "user": "={{ $json.member }}"
+      },
+      "name": "Get User Info1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -2620,
+        1160
+      ],
+      "id": "2b5e0f07-b5de-4e4f-ad24-b8fe888129a5",
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "name",
+              "value": "={{ $json[\"real_name\"] }}"
+            },
+            {
+              "name": "user",
+              "value": "={{ $json[\"id\"] }}"
+            },
+            {
+              "name": "summaryChannel",
+              "value": "={{ $('Loop Over Items1').item.json.id }}"
+            },
+            {
+              "name": "channelName",
+              "value": "={{ $('Filter4').item.json.channel }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Output1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -2220,
+        1160
+      ],
+      "id": "401f11be-4755-47b1-abfb-8776dc0d9795"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b312f97-8061-4d85-a6dd-951dafb40fd5",
+              "leftValue": "={{ $json.member }}",
+              "rightValue": "U08NSKNGBEC",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -3040,
+        1160
+      ],
+      "id": "323bb655-1935-4e7a-8abb-7d6c0737c236",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3740,
+        1140
+      ],
+      "id": "10c52f3f-9442-436d-89d7-4167e5ed03c9",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "282162bb-66a7-4d6a-aebf-a6acb4537b3a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH0KJM",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "81063d9a-b052-4f02-b6eb-93f3ae026533",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH1QMP",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -3980,
+        1140
+      ],
+      "id": "37b6be7c-7d8e-4b81-994e-3c82c1f537d7",
+      "name": "Filter4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -4560,
+        980
+      ],
+      "id": "a64c2c98-db7e-44cc-9650-c154b2eb2708",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "={{ $('Has Summary?').item.json.user.trim() }}",
+          "mode": "id"
+        },
+        "text": "=S'ill vous plait . Envoyez le compte_rendu pour aujourd'hui avant minuit .",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -300,
+        880
+      ],
+      "id": "b15e6717-01d8-44ab-a02a-94e00ed13438",
+      "name": "Slack",
+      "webhookId": "b9f886d8-d16e-496a-abf1-33557af357a1",
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/webhook/n8n_execution_data",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"auditId\": \"{{ $workflow.id }}_{{ $execution.id }}\",\n  \"workflowId\": \"{{ $workflow.id }}\",\n  \"nodeName\": \"node\",\n  \"executionId\": \"{{ $execution.id }}\",\n  \"timestamp\": \"{{ $now }}\",\n  \"input\": \"No input\",\n  \"output\": {{$json.toJsonString()}},\n  \"status\": \"{{ $json.status || 'success' }}\",\n  \"finished\": {{ $json.finished || true }}\n}",
+        "options": {}
+      },
+      "id": "f09df0b6-b9a7-47e7-8645-54898d4b37c1",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        480,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Code Node - Using input data\n\n// Option 1: Get name from previous node's output\nconst name = $('Merge').first().json.name || \"salah\";\n\n// Option 2: Get name from a specific previous node\n// const name = $('Previous Node Name').first().json.name || \"salah\";\n\n// Option 3: Get name from node parameter (if you set a parameter)\n// const name = $node.parameters.name || \"salah\";\n\nreturn [\n  {\n    json: {\n      message: `absence marked on ${name}`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        500
+      ],
+      "id": "f25f90db-ca89-4fed-b7f6-cf26cca29f3e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/webhook/n8n_execution_data",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"auditId\": \"{{ $workflow.id }}_{{ $execution.id }}\",\n  \"workflowId\": \"{{ $workflow.id }}\",\n  \"nodeName\": \"node\",\n  \"executionId\": \"{{ $execution.id }}\",\n  \"timestamp\": \"{{ $now }}\",\n  \"input\": \"No input\",\n  \"output\": {{$json.toJsonString()}},\n  \"status\": \"{{ $json.status || 'success' }}\",\n  \"finished\": {{ $json.finished || true }}\n}",
+        "options": {}
+      },
+      "id": "de7db268-e3f7-4007-aaa5-fbaa9ea7ac5b",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        600,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Code Node - Using input data\n\n// Option 1: Get name from previous node's output\nconst name = $('Merge').first().json.name || \"salah\";\n\n// Option 2: Get name from a specific previous node\n// const name = $('Previous Node Name').first().json.name || \"salah\";\n\n// Option 3: Get name from node parameter (if you set a parameter)\n// const name = $node.parameters.name || \"salah\";\n\nreturn [\n  {\n    json: {\n      message: `absence marked on ${name}`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1120
+      ],
+      "id": "297383e9-a81e-419e-a3fc-6f8645744dc9",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $env['SHEET_ID'] }}?fields=sheets.properties.title",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3100,
+        2880
+      ],
+      "id": "551bfa1c-b173-4c06-8e40-ba3bdfc5ab60",
+      "name": "HTTP Request2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sheets = $input.first().json.sheets || [];\nconst sheetNames = sheets.map(sheet => sheet.properties.title);\n\n// Set the result for use in next nodes\nreturn { sheetNames };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2880,
+        2880
+      ],
+      "id": "410e0c8d-4e36-4c97-9f6a-125e8b0d90ff",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "sheetNames",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2660,
+        2880
+      ],
+      "id": "b6aa1b21-37ea-4c1c-ac67-b26d709dd1c3",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "channels",
+        "options": {}
+      },
+      "id": "71e01133-686d-42da-8367-28d1e11d70a8",
+      "name": "Item Lists2",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 1,
+      "position": [
+        -3080,
+        3180
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://slack.com/api/conversations.list?types=private_channel,public_channel&exclude_archived=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "exclude_archived",
+              "value": "true"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            },
+            {
+              "name": "cursor",
+              "value": "={{ $json.cursor }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "17936943-7c01-4c35-bdf8-da6dfce9be20",
+      "name": "Slack: conversations.list2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -3280,
+        3180
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "di3F05xTs7fv1jNw",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keys": {
+          "key": [
+            {
+              "currentKey": "response_metadata.next_cursor",
+              "newKey": "cursor"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "id": "fc30a0dc-e380-48ab-96c3-9f61d135552b",
+      "name": "Rename Keys2",
+      "type": "n8n-nodes-base.renameKeys",
+      "typeVersion": 1,
+      "position": [
+        -2880,
+        3440
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "channel",
+              "value": "={{ $json[\"name\"] }}"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b78e42d1-7e4c-4626-958f-d8d8bf469b8f",
+      "name": "Channels2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -2680,
+        3180
+      ],
+      "notesInFlow": true,
+      "notes": "DO NOT RENAME!"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.response_metadata.next_cursor }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "id": "7ec23302-a773-4ca3-95fd-7302da2acdcc",
+      "name": "IF no more pages2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -3080,
+        3360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allData = [];\n\nfor (let index = 0; index <= $prevNode.runIndex; index++) {\n  allData.push.apply(allData, $(\"Channels2\").all(0, index));  // add items up\n};\n\nreturn allData;"
+      },
+      "id": "7bad179c-13f8-417e-8b01-db69f1d0f8d2",
+      "name": "All channels2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -2680,
+        3340
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## dependant",
+        "height": 355.41218637992824,
+        "width": 180.5973715651134
+      },
+      "id": "35e25d63-e64a-4197-a054-b3842540e2d8",
+      "name": "Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2720,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "cursor"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4cb19e33-356d-4ece-a07b-a4e8fae4efbf",
+      "name": "Initial cursor2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -3500,
+        3180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Slack channels",
+        "height": 522.7101449275364,
+        "width": 803.1690821256043
+      },
+      "id": "28625646-fd55-4c66-8aa7-60c7053aa748",
+      "name": "Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3540,
+        3080
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -2860,
+        3180
+      ],
+      "id": "0ee84d35-b1c9-458d-9ec3-06a03f16ebdb",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyWeek",
+              "hour": 0,
+              "weekday": "0"
+            }
+          ]
+        }
+      },
+      "name": "Weekly Update1",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -4000,
+        3180
+      ],
+      "id": "e4328c47-0a5c-49a3-9429-9bc0691bb395"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "sheetNames",
+              "field2": "channel"
+            }
+          ]
+        },
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "id": "cd7dbb59-e40e-47ec-9820-b7c1ad1e0567",
+      "name": "Compare Datasets1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        -2180,
+        3100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6e3c42a8-1ee7-463f-819f-bae24f51356a",
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1860,
+        3100
+      ],
+      "id": "b8d0dfe0-dbdf-47f7-8ede-8c517d502443",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM",
+          "mode": "list",
+          "cachedResultName": "Absences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Tljg4L6MJYxRBSJzEID8c8nkuip51e-dVxsuHnJrBxM/edit?usp=drivesdk"
+        },
+        "title": "={{ $json.channel }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1560,
+        3080
+      ],
+      "id": "4c3a619b-d833-41c7-a2a5-15c3df70e93f",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1340,
+        3080
+      ],
+      "id": "6a8b2305-6497-43f3-aaf4-c2175a7df81f",
+      "name": "Wait",
+      "webhookId": "634332e2-45b6-424f-b6c8-e536be7d210a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $env['SHEET_ID'] }}/values/'{{ $json.title }}':append?valueInputOption=RAW",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"values\": [\n    [\"Date\"],\n    [\"dd / mm / yyyy\"]\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1000,
+        3080
+      ],
+      "id": "071d2261-a47d-4c25-8a7d-95935e5da085",
+      "name": "HTTP Request4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2140,
+        1740
+      ],
+      "id": "72538885-fb40-424b-a0ea-06b922675191",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $env['SHEET_ID'] }}/values/'{{ $json.channelName }}'!A1:Z1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1820,
+        1680
+      ],
+      "id": "c2100a5a-ad9b-4210-8356-e3d3d8844d6c",
+      "name": "HTTP Request5",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "columnNames",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1300,
+        1680
+      ],
+      "id": "f6203517-8733-457f-91c9-6455611bada9",
+      "name": "Split Out",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const values = $input.first().json.values || [];\nconst columnNames = values[0] || []; // Should be [\"name\", \"age\"]\n\nreturn [{ json: { \n  columnNames: columnNames,\n  // Result: [\"name\", \"age\"] \n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1560,
+        1680
+      ],
+      "id": "553ef808-b3ec-42fa-af32-423d8f278266",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "columnNames",
+              "field2": "userName"
+            }
+          ]
+        },
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "id": "4dded09a-c0bb-4ce2-b1ef-f007bcee1615",
+      "name": "Compare Datasets",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        1860
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "282162bb-66a7-4d6a-aebf-a6acb4537b3a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH0KJM",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "81063d9a-b052-4f02-b6eb-93f3ae026533",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "C08NFGH1QMP",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2380,
+        3340
+      ],
+      "id": "4b72ce36-7bb9-471f-9918-14986a0305b3",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1280,
+        1260
+      ],
+      "id": "9e478ea4-46c1-4a1a-b8bf-1efbbbdb2e4f",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1460,
+        680
+      ],
+      "id": "a44166e7-fc4c-4f49-9943-b17021d736c5",
+      "name": "Loop Over Items4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "6PM Check Trigger": {
+      "main": [
+        [
+          {
+            "node": "Initial cursor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Slack Messages": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Summary?": {
+      "main": [
+        [
+          {
+            "node": "6 PM ?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "12 AM ?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "6 PM ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "12 AM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Absent in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Has Summary?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adding date Row": {
+      "main": [
+        [
+          {
+            "node": "Mark Absent in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send Invalid Summary Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 PM ": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12 AM": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 PM ?": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12 AM ?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Adding date Row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "12 AM ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Absent in Sheet2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adding date Row2": {
+      "main": [
+        [
+          {
+            "node": "Mark Absent in Sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists": {
+      "main": [
+        [
+          {
+            "node": "Channels",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: conversations.list": {
+      "main": [
+        [
+          {
+            "node": "Item Lists",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF no more pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Keys": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF no more pages": {
+      "main": [
+        [
+          {
+            "node": "All channels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All channels": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial cursor": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Members": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Info": {
+      "main": [
+        [
+          {
+            "node": "Set Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Output": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Get User Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Members",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Update": {
+      "main": [
+        [
+          {
+            "node": "Initial cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists1": {
+      "main": [
+        [
+          {
+            "node": "Channels1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: conversations.list1": {
+      "main": [
+        [
+          {
+            "node": "Item Lists1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF no more pages1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Keys1": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF no more pages1": {
+      "main": [
+        [
+          {
+            "node": "All channels1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename Keys1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All channels1": {
+      "main": [
+        [
+          {
+            "node": "Filter4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial cursor1": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Members1": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Info1": {
+      "main": [
+        [
+          {
+            "node": "Set Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Output1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Get User Info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Get Slack Messages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Get Members1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists2": {
+      "main": [
+        [
+          {
+            "node": "Channels2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: conversations.list2": {
+      "main": [
+        [
+          {
+            "node": "Item Lists2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF no more pages2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Keys2": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF no more pages2": {
+      "main": [
+        [
+          {
+            "node": "All channels2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rename Keys2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial cursor2": {
+      "main": [
+        [
+          {
+            "node": "Slack: conversations.list2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Update1": {
+      "main": [
+        [
+          {
+            "node": "Initial cursor2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All channels2": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Adding date Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Etc/UTC",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "184a7191-24bb-4811-a600-a7b462f42135",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "mtoYQ4d4DmpWopR3",
+  "tags": []
+}

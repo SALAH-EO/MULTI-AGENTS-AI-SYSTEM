@@ -1,0 +1,14 @@
+fastapi
+requests
+pydantic
+redis
+pymongo
+passlib[bcrypt]
+pyjwt
+cryptography
+python-dotenv
+uvicorn
+python-jose
+email-validator
+websockets
+python-multipart

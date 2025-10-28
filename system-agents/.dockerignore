@@ -1,0 +1,17 @@
+node_modules
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+env.bak/
+wheels/
+pip-wheel-metadata/
+dist/
+build/
+*.egg-info/
+.venv/
+env/
+*.log

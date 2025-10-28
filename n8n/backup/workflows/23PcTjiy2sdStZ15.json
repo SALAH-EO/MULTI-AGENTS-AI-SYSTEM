@@ -1,0 +1,3682 @@
+{
+  "name": "Agent Commercial",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $env['GOOGLE_API_KEY'] }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $env['GOOGLE_CSE_ID'] }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.Position }} {{ $json.Domaine }} \"{{ $json.Location }}\" site:{{ $json.Code }}.linkedin.com/in {{ $json.DNC }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $runIndex == 0 ? $node[\"Set Fields\"].json.currentStartIndex : ($node[\"Pagination\"].json.startIndex >= 101 ? 1 : $node[\"Pagination\"].json.startIndex) }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        540
+      ],
+      "id": "6222a443-e3d6-438b-b321-672a809da96f",
+      "name": "Search Google",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the response data\nconst response = $input.first().json;\nconst items = response.items || [];\n\n// Track pagination info\nlet nextStartIndex = 1;\nif (response.queries && response.queries.nextPage && response.queries.nextPage[0]) {\n  nextStartIndex = response.queries.nextPage[0].startIndex;\n}\n\n// Calculate if we should continue (Google only allows up to 100 results)\nconst hasMoreResults = nextStartIndex <= 100;\n\n// Process the items and include pagination info in each item\nconst results = items.map(item => {\n  const titleParts = item.title.split(\" - \");\n  return {\n    name: titleParts[0] || null,\n    title: titleParts.slice(1).join(\" - \") || null,\n    link: item.link || null,\n    snippet: item.snippet || null,\n    image: item.pagemap?.cse_thumbnail?.[0]?.src || null,\n    // Add pagination info to each item\n    index: nextStartIndex,\n    results: hasMoreResults\n  };\n});\n\n// If there are no results, return at least one item with pagination info\nif (results.length === 0) {\n  return [{ \n    json: {\n      name: null,\n      title: null,\n      link: null,\n      snippet: null,\n      image: null,\n      index: nextStartIndex,\n      results: false\n    }\n  }];\n}\n\n// Return the processed results\nreturn results.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3060,
+        540
+      ],
+      "id": "467466fc-6f74-4930-b775-82e08cf00e28",
+      "name": "Extract Results",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2620,
+        1120
+      ],
+      "id": "ef94c8b6-df3d-47b3-96f0-d70ba7009fa5",
+      "name": "Wait",
+      "webhookId": "33942570-d90d-4996-a59d-a82a2f2681a0"
+    },
+    {
+      "parameters": {
+        "formTitle": "Agent LinkedIn",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Position",
+              "placeholder": "CEO HR ..."
+            },
+            {
+              "fieldLabel": "Location",
+              "placeholder": "Morocco France casablanca ..."
+            },
+            {
+              "fieldLabel": "Domaine",
+              "placeholder": "ai dev ..."
+            },
+            {
+              "fieldLabel": "Domaines non considéreées",
+              "placeholder": "-medecine -finance"
+            }
+          ]
+        },
+        "options": {
+          "path": "Agent"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        780
+      ],
+      "id": "42c6253c-6374-4b18-967e-d8cc2b611917",
+      "name": "On form submission1",
+      "webhookId": "1d13ebe0-4a4e-4bf1-a799-982374fb39b0"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db38856b-ae70-4ece-b3b1-94622e91249a",
+              "name": "Position",
+              "value": "={{ $json.Position }}",
+              "type": "string"
+            },
+            {
+              "id": "bed85569-0251-4ed2-b3db-2e13f19d61ef",
+              "name": "Location",
+              "value": "={{ $json.Location }}",
+              "type": "string"
+            },
+            {
+              "id": "51e2a82c-5d03-4deb-be59-be1812b58d2e",
+              "name": "Domaine",
+              "value": "={{ $json.Domaine }}",
+              "type": "string"
+            },
+            {
+              "id": "d273bcbd-69dc-40cd-b459-ce4e200b6419",
+              "name": "DNC",
+              "value": "={{ $json.DNC }}",
+              "type": "string"
+            },
+            {
+              "id": "452ecc89-9b0c-4c04-b462-9fcbe60d4b68",
+              "name": "CountryCode",
+              "value": "={{ $json.CountryCode }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1480,
+        600
+      ],
+      "id": "65e320fc-69d4-4811-ae5c-9c066adb215b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/shared/name.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        580
+      ],
+      "id": "25418af2-cd42-4872-accc-65fccbee47ab",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "fileName": "name.json"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1740,
+        580
+      ],
+      "id": "9b97e00e-2fd5-43d9-b83d-d82d29031966",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst inputItems = $input.all();\nconsole.log(\"Input items count:\", inputItems.length);\n\n// Extract pagination values with fallbacks\nlet nextStartIndex = 1;\nlet hasMoreResults = false;\n\n// Try different approaches to find the pagination info\nif (inputItems && inputItems.length > 0) {\n  const firstItem = inputItems[0];\n  \n  // Check direct properties\n  if (firstItem.json) {\n    console.log(\"First item JSON:\", JSON.stringify(firstItem.json));\n    \n    // Check for \"index\" property (instead of startIndex)\n    if (firstItem.json.index !== undefined) {\n      nextStartIndex = firstItem.json.index;\n      console.log(\"Found index:\", nextStartIndex);\n    }\n    \n    // Check for \"results\" property (instead of hasMoreResults)\n    if (firstItem.json.results !== undefined) {\n      hasMoreResults = firstItem.json.results;\n      console.log(\"Found results:\", hasMoreResults);\n    }\n  }\n}\n\n// Return pagination control info\nreturn {\n  json: {\n    continueLoop: hasMoreResults,\n    startIndex: nextStartIndex\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4360,
+        1380
+      ],
+      "id": "fb508ba1-5fd2-48ed-837b-e9d0a3d4456a",
+      "name": "Pagination"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "faef2862-80a4-465b-9e0b-be5b9753dcbd",
+              "leftValue": "={{ $('Pagination').first().json.continueLoop }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7040,
+        1700
+      ],
+      "id": "c292ea24-63de-4315-9b2a-7acfb4a5e520",
+      "name": "Pagination Check",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic",
+          "mode": "list",
+          "cachedResultName": "linkedin_all",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2900,
+        980
+      ],
+      "id": "d8c801d6-8d52-483d-aef1-a580ee3a80a4",
+      "name": "Google Sheets",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "link",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        3200,
+        1080
+      ],
+      "id": "cf3e6791-9cac-4e68-9eb4-bfac181a9942",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "link",
+        "joinMode": "enrichInput2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        3740,
+        1280
+      ],
+      "id": "b6472883-6dbe-4ce2-82b9-3e32171e5bc2",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic",
+          "mode": "list",
+          "cachedResultName": "linkedin_all",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hv1SG6qSPzF6AwwJMlv4zRNhgaGglAn-nZY1yUJJ1ic/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "title": "={{ $json.title }}",
+            "link": "={{ $json.link }}",
+            "snippet": "={{ $json.snippet }}",
+            "image": "={{ $json.image }}",
+            "index": "={{ $json.index }}",
+            "results": "={{ $json.results }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "snippet",
+              "displayName": "snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "results",
+              "displayName": "results",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        3500,
+        1080
+      ],
+      "id": "69aa61fd-1154-44ab-9b92-4b99d2955908",
+      "name": "Google Sheets1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        4000,
+        1280
+      ],
+      "id": "da01da17-1640-43aa-9840-70f0f6909761",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc27b2d9-8de7-43ca-a741-2d150084f78e",
+              "name": "currentStartIndex",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "fc552c57-4510-4f04-aa09-2294306d0d9f",
+              "name": "maxPages",
+              "value": 10,
+              "type": "number"
+            },
+            {
+              "id": "10a002a5-8f7f-40df-8f93-2a6785bb22e1",
+              "name": "Position",
+              "value": "={{ $json.data[0].Position }}",
+              "type": "string"
+            },
+            {
+              "id": "350bd659-fc19-401a-901b-dc8e3c0e3076",
+              "name": "Location",
+              "value": "={{ $json.data[0].Location }}",
+              "type": "string"
+            },
+            {
+              "id": "7cae6516-4fe0-4835-b905-67de9ebca4e9",
+              "name": "Domaine",
+              "value": "={{ $json.data[0].Domaine }}",
+              "type": "string"
+            },
+            {
+              "id": "5b860038-471c-4e69-9881-3cdd6075caa4",
+              "name": "DNC",
+              "value": "={{ $json.data[0].DNC }}",
+              "type": "string"
+            },
+            {
+              "id": "936e7be7-7660-414f-9fb2-897a71582ceb",
+              "name": "Code",
+              "value": "={{ $json.data[0].CountryCode }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2680,
+        540
+      ],
+      "id": "8b68fb73-c038-4d42-a6e7-779460571d59",
+      "name": "Set Fields",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/shared/name.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        540
+      ],
+      "id": "7677679f-0bea-41dc-9d8b-6e3ced53ae10",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2460,
+        540
+      ],
+      "id": "0cd42f1e-4db1-4eb3-9cc8-54907628be12",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ",
+          "mode": "list",
+          "cachedResultName": "linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        4320,
+        1140
+      ],
+      "id": "956408d5-7193-4114-991b-06c5420c55db",
+      "name": "Google Sheets2",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "link",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        4600,
+        1200
+      ],
+      "id": "a8cf04a2-77c8-4e79-8e9c-d9adb94338b6",
+      "name": "Merge2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        4800,
+        1300
+      ],
+      "id": "8494c563-a294-415d-bccb-ce7e4192225d",
+      "name": "Merge3",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "71c6d95c-1694-4a6c-95a6-449aae808405",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5020,
+        1340
+      ],
+      "id": "c81ba02f-78a0-42e8-9094-76da0b81c9b4",
+      "name": "If",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d7b06210-634b-4f22-90c9-44978e267991",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5800,
+        1020
+      ],
+      "id": "08990e03-2fd2-4148-b835-ed569571e164",
+      "name": "If1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.9,
+          "numPredict": 50
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        6340,
+        1200
+      ],
+      "id": "96c38586-ba0c-4366-b099-2f3f310b867d",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the following LinkedIn profile information:\n\n**Title**: {{ $('If').item.json.title }}\n**Snippet**: {{ $('If').item.json.snippet }}\n\nExtract and output only the name of the company the user currently works at. If multiple company names are present, output only the most likely one. If no company is mentioned, output \"Company not specified\".",
+        "options": {
+          "systemMessage": "You are an AI agent specialized in extracting company names from LinkedIn user profiles. Your task is to analyze a provided snippet and title from a LinkedIn user's profile and extract the name of the company they currently work for. Output only the company name, without any notes, comments, or explanations. If multiple company names are present, select the most likely one based on context (e.g., the one associated with the user's current role). If there is doubt about the company name, output the most prominent or specific name. If no company name is explicitly mentioned, output \"Company not specified\"."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        6360,
+        1000
+      ],
+      "id": "c9872b04-5979-45f6-bb51-e060fd492397",
+      "name": "Company name Finder"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the following LinkedIn profile based on its title, snippet, and name. Return the profile's name if it is worth connecting with, or \"No\" if it is not.\n\n**Name**: {{ $json.name }}\n**Title**: {{ $json.title }}\n**Snippet**: {{ $json.snippet }}",
+        "options": {
+          "systemMessage": "You are an expert LinkedIn networking assistant. Your task is to evaluate LinkedIn profiles based on their title, snippet, and name to determine if they are worth connecting with for professional networking. A profile is worth connecting with if it indicates a high-level executive (e.g., CEO, Founder) in a relevant industry, active engagement, or potential for business collaboration. If the profile is worth connecting with, return only the profile's name. If not, return \"No\". Output only the profile name or \"No\", with no explanation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        5140,
+        800
+      ],
+      "id": "3f1d9b52-f415-41fd-a695-02669a90ad68",
+      "name": "Profile Qualifier"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.1,
+          "topP": 0.5,
+          "numPredict": 50
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        5200,
+        1080
+      ],
+      "id": "9e2061a9-36bd-4f90-8d0d-68ac366bd770",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "883bced1-a6bf-47f2-98b0-da0fb958c3b3",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Company not specified",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6760,
+        1060
+      ],
+      "id": "82df6c20-f4e6-452b-9fdb-178448fc8a89",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ",
+          "mode": "list",
+          "cachedResultName": "linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('If').item.json.name }}",
+            "title": "={{ $('If').item.json.title }}",
+            "link": "={{ $('If').item.json.link }}",
+            "snippet": "={{ $('If').item.json.snippet }}",
+            "image": "={{ $('If').item.json.image }}",
+            "index": "={{ $('If').item.json.index }}",
+            "results": "={{ $('If').item.json.results }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "snippet",
+              "displayName": "snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "results",
+              "displayName": "results",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        7100,
+        1220
+      ],
+      "id": "89310c11-ae59-4451-9dd6-94bed39e9fca",
+      "name": "Google Sheets3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "23PcTjiy2sdStZ15",
+          "mode": "list",
+          "cachedResultName": "Agent Commercial"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "={{ $json.output }}",
+            "Country": "={{ $('Set Fields').item.json.Location}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        7140,
+        1020
+      ],
+      "id": "c7b8d577-cd27-4e32-a5f9-b2d265f96e99",
+      "name": "Execute Workflow1",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ",
+          "mode": "list",
+          "cachedResultName": "linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XLSieenPipTIXuFkhhD_lrh9abRLS4Od0NzqVXEWiiQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "title": "={{ $json.title }}",
+            "link": "={{ $json.link }}",
+            "snippet": "={{ $json.snippet }}",
+            "image": "={{ $json.image }}",
+            "index": "={{ $json.index }}",
+            "results": "={{ $json.results }}",
+            "message": "={{ $('Execute Workflow1').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "snippet",
+              "displayName": "snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "results",
+              "displayName": "results",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        7740,
+        1020
+      ],
+      "id": "880d12cb-4743-4045-ab45-1a5878c6c2b7",
+      "name": "Google Sheets4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        980
+      ],
+      "id": "9d796a78-a895-492d-b601-16860b4590f3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        2060
+      ],
+      "id": "a6f7d08a-d329-4c83-9568-bca8dbd7f8ff",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "command": "python /data/shared/python-scripts/linkedin_script.py"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        7000,
+        2080
+      ],
+      "id": "776c02d9-f8f9-4fb5-aed9-6d38fb5eeaae",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "faef2862-80a4-465b-9e0b-be5b9753dcbd",
+              "leftValue": "={{ $('Pagination').first().json.continueLoop }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5980,
+        1560
+      ],
+      "id": "fc4d5b47-86c8-4ab9-9031-d23daa2a736d",
+      "name": "Pagination Check1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "output",
+              "field2": "name"
+            }
+          ]
+        },
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        5640,
+        780
+      ],
+      "id": "cb64e60c-c7ec-4181-97f2-f5174f516b9b",
+      "name": "Merge4",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the If node and iterate through them\nconst ifNodeItems = $('If1').all();\n\n// Initialize array to store processed items\nconst processedItems = [];\n\n// Iterate through each item from the If node\nfor (let i = 0; i < ifNodeItems.length; i++) {\n  const item = ifNodeItems[i];\n  \n  // Extract all attributes from each item\n  const processedItem = {\n    index: item.json.index,\n    results: item.json.results,\n    name: item.json.name,\n    title: item.json.title,\n    link: item.json.link,\n    snippet: item.json.snippet,\n    image: item.json.image\n  };\n  \n  // Add to processed items array\n  processedItems.push(processedItem);\n}\n\n// Return all processed items\nreturn processedItems.map(item => ({\n  json: item\n}));\n\n// Alternative approach using forEach:\n/*\nconst processedItems = [];\n\n$('If').all().forEach((item, index) => {\n  processedItems.push({\n    json: {\n      index: item.json.index,\n      results: item.json.results,\n      name: item.json.name,\n      title: item.json.title,\n      link: item.json.link,\n      snippet: item.json.snippet,\n      image: item.json.image\n    }\n  });\n});\n\nreturn processedItems;\n*/\n\n// Alternative approach using map (most concise):\n/*\nreturn $('If').all().map(item => ({\n  json: {\n    index: item.json.index,\n    results: item.json.results,\n    name: item.json.name,\n    title: item.json.title,\n    link: item.json.link,\n    snippet: item.json.snippet,\n    image: item.json.image\n  }\n}));\n*/"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7380,
+        1020
+      ],
+      "id": "1b2e650b-a575-4952-84a1-5ccf0f6d4c83",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/shared/name.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        400,
+        980
+      ],
+      "id": "1231e6a8-dc25-43d5-9b6a-37d432007bf2",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        580,
+        980
+      ],
+      "id": "90336d0d-5dfc-411a-8756-413bff0a7230",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1200,
+        600
+      ],
+      "id": "8172fab5-cb96-4ad3-85a5-227c16893079",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define lists of common keywords for empty fields\nconst positionKeywords = ['CEO', 'Manager', 'Director', 'Owner', 'President', 'Engineer', 'Founder', 'VP', 'Head', 'Lead'];\nconst domainKeywords = ['AI', 'Full Stack', 'Software', 'Marketing', 'Data Science', 'Operations', 'Product Management', 'Sales', 'Finance', 'HR'];\n\n// Generic prefixes and suffixes for creating variations\nconst positionPrefixes = ['Senior', 'Lead', 'Head of', 'Chief', 'Principal', 'Executive'];\nconst positionSuffixes = ['Manager', 'Specialist', 'Expert', 'Professional', 'Officer', 'Consultant'];\n\nconst domainPrefixes = ['Enterprise', 'B2B', 'B2C', 'Digital', 'Advanced', 'Modern'];\nconst domainSuffixes = ['Solutions', 'Technology', 'Platform', 'Services', 'Development', 'Systems'];\n\n// Location variations for different search approaches (all lowercase keys)\nconst locationVariations = {\n  'maroc': ['Morocco', 'Maroc'],\n  'morocco': ['Morocco', 'Maroc'],\n  'france': ['France'],\n  'canada': ['Canada'],\n  'spain': ['Spain'],\n  'dubai': ['Dubai', 'UAE', 'United Arab Emirates'],\n  'uae': ['UAE', 'Dubai','United Arab Emirates'],\n  'united arab emirates': ['United Arab Emirates', 'UAE', 'Dubai'],\n  'qatar': ['Qatar'],\n  'bahrain': ['Bahrain'],\n  'kuwait': ['Kuwait']\n};\n\n// Country/location codes mapping (lowercase keys)\nconst locationCodes = {\n  'maroc': 'ma',\n  'morocco': 'ma',\n  'france': 'fr',\n  'spain': 'es',\n  'dubai': 'ae',\n  'uae': 'ae',\n  'united arab emirates': 'ae',\n  'qatar': 'qa',\n  'bahrain': 'bh',\n  'kuwait': 'kw',\n  'canada': 'ca',\n  'usa': 'us',\n  'united states': 'us',\n  'uk': 'gb',\n  'united kingdom': 'gb'\n};\n\n// Helper function to pick a random element from an array\nfunction getRandomElement(arr) {\n  return arr[Math.floor(Math.random() * arr.length)];\n}\n\n// Helper function to ensure unique selections\nfunction getUniqueElements(arr, count, exclude = []) {\n  const available = arr.filter(item => !exclude.includes(item));\n  const result = [];\n  for (let i = 0; i < Math.min(count, available.length); i++) {\n    const randomIndex = Math.floor(Math.random() * available.length);\n    result.push(available.splice(randomIndex, 1)[0]);\n  }\n  return result;\n}\n\n// Function to create position variations using generic prefixes/suffixes\nfunction createPositionVariation(basePosition) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(positionPrefixes)} ${basePosition}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${basePosition} ${getRandomElement(positionSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${basePosition}\"`;\n  } else {\n    // Keep original (30% chance)\n    return basePosition;\n  }\n}\n\n// Function to create domain variations using generic prefixes/suffixes\nfunction createDomainVariation(baseDomain) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(domainPrefixes)} ${baseDomain}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${baseDomain} ${getRandomElement(domainSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${baseDomain}\"`;\n  } else {\n    // Keep original (30% chance)\n    return baseDomain;\n  }\n}\n\n// Function to create location variations\nfunction createLocationVariation(baseLocation) {\n  const locationKey = baseLocation.toLowerCase();\n  const variations = locationVariations[locationKey] || [baseLocation];\n  const selectedLocation = getRandomElement(variations);\n  \n  // 30% chance to add quotes around location\n  return Math.random() < 0.3 ? `\"${selectedLocation}\"` : selectedLocation;\n}\n\n// Function to get country code for location\nfunction getLocationCode(location) {\n  const locationKey = location.toLowerCase();\n  return locationCodes[locationKey] || 'unknown';\n}\n\n// Function to format DNC (Do Not Contact) domains for Google search exclusion\nfunction formatDNC(dncInput) {\n  if (!dncInput || dncInput.trim() === '') {\n    return '';\n  }\n  \n  console.log('Original DNC input:', dncInput); // Debug log\n  \n  // Split by semicolon, trim whitespace, and add '-' prefix to each domain\n  const formatted = dncInput.split(';')\n    .map(domain => domain.trim())\n    .filter(domain => domain !== '') // Remove empty strings\n    .map(domain => `-${domain}`)\n    .join(' ');\n  \n  console.log('Formatted DNC output:', formatted); // Debug log\n  return formatted;\n}\n\n// Get input data and normalize to lowercase for processing\nconst positionInput = ($input.first().json.Position || '').trim();\nconst locationInput = ($input.first().json.Location || 'Maroc').trim(); \nconst domainInput = ($input.first().json.Domaine || '').trim();\nconst dncInput = ($input.first().json['Domaines non considéreées'] || '').trim();\nconst formattedDNC = formatDNC(dncInput); // Format DNC for Google search exclusion\n\n// Check if all fields are filled\nconst allFieldsFilled = positionInput && locationInput && domainInput;\n\n// Generate 10 unique outputs\nconst outputs = [];\nconst usedPositions = positionInput ? [positionInput] : [];\nconst usedDomains = domainInput ? [domainInput] : [];\nconst usedCombinations = new Set(); // Track unique combinations to avoid duplicates\n\nfor (let i = 0; i < 10; i++) {\n  let position, domain, location;\n  \n  if (i === 0) {\n    // First result: Always use exact user input (no modifications)\n    position = positionInput || getRandomElement(positionKeywords);\n    domain = domainInput || getRandomElement(domainKeywords);\n    location = locationInput;\n    \n    // Add to used lists if they were generated randomly\n    if (!positionInput) usedPositions.push(position);\n    if (!domainInput) usedDomains.push(domain);\n    \n  } else if (allFieldsFilled) {\n    // All fields are filled - create variations using prefixes/suffixes/quotes\n    position = createPositionVariation(positionInput);\n    domain = createDomainVariation(domainInput);\n    location = createLocationVariation(locationInput);\n    \n    // Ensure we don't create the exact same combination\n    const combination = `${position}-${domain}-${location}`;\n    let attempts = 0;\n    while (usedCombinations.has(combination) && attempts < 5) {\n      position = createPositionVariation(positionInput);\n      domain = createDomainVariation(domainInput);\n      location = createLocationVariation(locationInput);\n      attempts++;\n    }\n    usedCombinations.add(combination);\n    \n  } else {\n    // Some fields are empty - use random selection with uniqueness\n    position = positionInput || getRandomElement(positionKeywords.filter(p => !usedPositions.includes(p)));\n    domain = domainInput || getRandomElement(domainKeywords.filter(d => !usedDomains.includes(d)));\n    location = locationInput;\n    \n    // Apply variations even when using defaults (but not for first result)\n    if (!positionInput && position) {\n      position = Math.random() < 0.4 ? createPositionVariation(position) : position;\n      usedPositions.push(position);\n    }\n    if (!domainInput && domain) {\n      domain = Math.random() < 0.4 ? createDomainVariation(domain) : domain;\n      usedDomains.push(domain);\n    }\n    if (location) {\n      location = createLocationVariation(location);\n    }\n  }\n  \n  outputs.push({\n    Position: position,\n    Location: location,\n    Domaine: domain,\n    DNC: formattedDNC, // Use formatted DNC with '-' prefixes\n    CountryCode: getLocationCode(locationInput), // Add country code based on original input\n    // Add a unique identifier for debugging\n    queryVariant: i + 1\n  });\n}\n\n// Return the 10 outputs\nreturn outputs.map(output => ({ json: output }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        980
+      ],
+      "id": "e29458b5-9c0f-46f9-98fc-20c6045deddc",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define lists of common keywords for empty fields\nconst positionKeywords = ['CEO', 'Manager', 'Director', 'Owner', 'President', 'Engineer', 'Founder', 'VP', 'Head', 'Lead'];\nconst domainKeywords = ['AI', 'Full Stack', 'Software', 'Marketing', 'Data Science', 'Operations', 'Product Management', 'Sales', 'Finance', 'HR'];\n\n// Generic prefixes and suffixes for creating variations\nconst positionPrefixes = ['Senior', 'Lead', 'Head of', 'Chief', 'Principal', 'Executive'];\nconst positionSuffixes = ['Manager', 'Specialist', 'Expert', 'Professional', 'Officer', 'Consultant'];\n\nconst domainPrefixes = ['Enterprise', 'B2B', 'B2C', 'Digital', 'Advanced', 'Modern'];\nconst domainSuffixes = ['Solutions', 'Technology', 'Platform', 'Services', 'Development', 'Systems'];\n\n// Location variations for different search approaches (all lowercase keys)\nconst locationVariations = {\n  'maroc': ['Morocco', 'Maroc'],\n  'morocco': ['Morocco', 'Maroc'],\n  'france': ['France'],\n  'canada': ['Canada'],\n  'spain': ['Spain'],\n  'dubai': ['Dubai', 'UAE', 'United Arab Emirates'],\n  'uae': ['UAE', 'Dubai','United Arab Emirates'],\n  'united arab emirates': ['United Arab Emirates', 'UAE', 'Dubai'],\n  'qatar': ['Qatar'],\n  'bahrain': ['Bahrain'],\n  'kuwait': ['Kuwait']\n};\n\n// Country/location codes mapping (lowercase keys)\nconst locationCodes = {\n  'maroc': 'ma',\n  'morocco': 'ma',\n  'france': 'fr',\n  'spain': 'es',\n  'dubai': 'ae',\n  'uae': 'ae',\n  'united arab emirates': 'ae',\n  'qatar': 'qa',\n  'bahrain': 'bh',\n  'kuwait': 'kw',\n  'canada': 'ca',\n  'usa': 'us',\n  'united states': 'us',\n  'uk': 'gb',\n  'united kingdom': 'gb'\n};\n\n// Helper function to pick a random element from an array\nfunction getRandomElement(arr) {\n  return arr[Math.floor(Math.random() * arr.length)];\n}\n\n// Helper function to ensure unique selections\nfunction getUniqueElements(arr, count, exclude = []) {\n  const available = arr.filter(item => !exclude.includes(item));\n  const result = [];\n  for (let i = 0; i < Math.min(count, available.length); i++) {\n    const randomIndex = Math.floor(Math.random() * available.length);\n    result.push(available.splice(randomIndex, 1)[0]);\n  }\n  return result;\n}\n\n// Function to create position variations using generic prefixes/suffixes\nfunction createPositionVariation(basePosition) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(positionPrefixes)} ${basePosition}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${basePosition} ${getRandomElement(positionSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${basePosition}\"`;\n  } else {\n    // Keep original (30% chance)\n    return basePosition;\n  }\n}\n\n// Function to create domain variations using generic prefixes/suffixes\nfunction createDomainVariation(baseDomain) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(domainPrefixes)} ${baseDomain}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${baseDomain} ${getRandomElement(domainSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${baseDomain}\"`;\n  } else {\n    // Keep original (30% chance)\n    return baseDomain;\n  }\n}\n\n// Function to create location variations\nfunction createLocationVariation(baseLocation) {\n  const locationKey = baseLocation.toLowerCase();\n  const variations = locationVariations[locationKey] || [baseLocation];\n  const selectedLocation = getRandomElement(variations);\n  \n  // 30% chance to add quotes around location\n  return Math.random() < 0.3 ? `\"${selectedLocation}\"` : selectedLocation;\n}\n\n// Function to get country code for location\nfunction getLocationCode(location) {\n  const locationKey = location.toLowerCase();\n  return locationCodes[locationKey] || 'unknown';\n}\n\n// Function to format DNC (Do Not Contact) domains for Google search exclusion\nfunction formatDNC(dncInput) {\n  if (!dncInput || dncInput.trim() === '') {\n    return '';\n  }\n  \n  console.log('Original DNC input:', dncInput); // Debug log\n  \n  // Split by semicolon, trim whitespace, and add '-' prefix to each domain\n  const formatted = dncInput.split(';')\n    .map(domain => domain.trim())\n    .filter(domain => domain !== '') // Remove empty strings\n    .map(domain => `-${domain}`)\n    .join(' ');\n  \n  console.log('Formatted DNC output:', formatted); // Debug log\n  return formatted;\n}\n\n// Get input data and normalize to lowercase for processing\nconst positionInput = ($input.first().json.Position || '').trim();\nconst locationInput = ($input.first().json.Location || 'Maroc').trim(); \nconst domainInput = ($input.first().json.Domaine || '').trim();\nconst dncInput = ($input.first().json['Domaines non considéreées'] || '').trim();\nconst formattedDNC = formatDNC(dncInput); // Format DNC for Google search exclusion\n\n// Check if all fields are filled\nconst allFieldsFilled = positionInput && locationInput && domainInput;\n\n// Generate 10 unique outputs\nconst outputs = [];\nconst usedPositions = positionInput ? [positionInput] : [];\nconst usedDomains = domainInput ? [domainInput] : [];\nconst usedCombinations = new Set(); // Track unique combinations to avoid duplicates\n\nfor (let i = 0; i < 10; i++) {\n  let position, domain, location;\n  \n  if (i === 0) {\n    // First result: Always use exact user input (no modifications)\n    position = positionInput || getRandomElement(positionKeywords);\n    domain = domainInput || getRandomElement(domainKeywords);\n    location = locationInput;\n    \n    // Add to used lists if they were generated randomly\n    if (!positionInput) usedPositions.push(position);\n    if (!domainInput) usedDomains.push(domain);\n    \n  } else if (allFieldsFilled) {\n    // All fields are filled - create variations using prefixes/suffixes/quotes\n    position = createPositionVariation(positionInput);\n    domain = createDomainVariation(domainInput);\n    location = createLocationVariation(locationInput);\n    \n    // Ensure we don't create the exact same combination\n    const combination = `${position}-${domain}-${location}`;\n    let attempts = 0;\n    while (usedCombinations.has(combination) && attempts < 5) {\n      position = createPositionVariation(positionInput);\n      domain = createDomainVariation(domainInput);\n      location = createLocationVariation(locationInput);\n      attempts++;\n    }\n    usedCombinations.add(combination);\n    \n  } else {\n    // Some fields are empty - use random selection with uniqueness\n    position = positionInput || getRandomElement(positionKeywords.filter(p => !usedPositions.includes(p)));\n    domain = domainInput || getRandomElement(domainKeywords.filter(d => !usedDomains.includes(d)));\n    location = locationInput;\n    \n    // Apply variations even when using defaults (but not for first result)\n    if (!positionInput && position) {\n      position = Math.random() < 0.4 ? createPositionVariation(position) : position;\n      usedPositions.push(position);\n    }\n    if (!domainInput && domain) {\n      domain = Math.random() < 0.4 ? createDomainVariation(domain) : domain;\n      usedDomains.push(domain);\n    }\n    if (location) {\n      location = createLocationVariation(location);\n    }\n  }\n  \n  outputs.push({\n    Position: position,\n    Location: location,\n    Domaine: domain,\n    DNC: formattedDNC, // Use formatted DNC with '-' prefixes\n    CountryCode: getLocationCode(locationInput), // Add country code based on original input\n    // Add a unique identifier for debugging\n    queryVariant: i + 1\n  });\n}\n\n// Return the 10 outputs\nreturn outputs.map(output => ({ json: output }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        600
+      ],
+      "id": "108d2dab-73f9-4723-a606-c0f2d22c905d",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "=0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        2260
+      ],
+      "id": "355a46e6-519e-4aa4-8e5f-2ec7d70d921e",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "command": "python /data/shared/python-scripts/followup_script.py"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        7000,
+        2280
+      ],
+      "id": "8cd9d8e3-6882-41be-bc14-04d6a1702083",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 2480,
+        "width": 8320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        80
+      ],
+      "id": "cc849fa6-d82e-431f-9d92-f030aa8cb290",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/webhook/n8n_execution_data",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"auditId\": \"{{ $workflow.id }}_{{ $execution.id }}\",\n  \"workflowId\": \"{{ $workflow.id }}\",\n  \"nodeName\": \"node\",\n  \"executionId\": \"{{ $execution.id }}\",\n  \"timestamp\": \"{{ $now }}\",\n  \"input\": \"No input\",\n  \"output\": {{$json.toJsonString()}},\n  \"status\": \"{{ $json.status || 'success' }}\",\n  \"finished\": {{ $json.finished || true }}\n}",
+        "options": {}
+      },
+      "id": "ccca1f90-e658-44a6-b56b-0875766f493b",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3340,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "allowedOrigins": "*",
+          "responseMode": "responseNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        600
+      ],
+      "id": "267c0392-d675-466f-abee-aa393ef590a4",
+      "name": "When chat message received",
+      "webhookId": "b7f2bdb5-5b5e-49c6-9d4e-72efb257b539"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un assistant expert en extraction d'informations professionnelles. Ta tâche est d'analyser le message suivant : {{ $json.message }} et de produire un JSON au format suivant : [{ \\\"Position\\\": \\\"\\\", \\\"Location\\\": \\\"Maroc\\\", \\\"Domaine\\\": \\\"\\\", \\\"Domaines non considéreées\\\": \\\"\\\" }]. Extrais les informations suivantes : 1. **Position** : Poste ou titre professionnel (ex: CEO, Manager, Directeur, Ingénieur). 2. **Location** : Localisation géographique. 3. **Domaine** : Secteur d'activité (ex: IA, Marketing, Tech, Finance). 4. **Domaines non considéreées** : Secteurs à exclure, avec un '-' au début de chaque domaine (ex: \\\"-finance -bancaire\\\"). Règles : - Si une information n'est pas mentionnée, utilise une chaîne vide \\\"\\\". - Sois flexible avec les variations linguistiques (français/anglais). - Identifie les synonymes et variantes des termes professionnels. - Ne produis que le JSON, sans commentaires ni explications.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Tu es un assistant spécialisé dans l'extraction d'informations professionnelles à partir de messages en français. Analyse le message fourni et retourne uniquement le JSON au format spécifié, sans commentaires ni explications. Sois précis et n'invente pas d'informations non mentionnées."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        20,
+        600
+      ],
+      "id": "0a1b64c5-ea3b-4cf1-ba89-e6be01dd6a39",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0,
+          "topK": 40,
+          "topP": 0.9,
+          "repeatPenalty": 1.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        820
+      ],
+      "id": "3d6e662f-34d8-4968-83be-d168d7e7dd3a",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  try {\n    const output = JSON.parse(item.json.output || '[]');\n    return output;\n  } catch (error) {\n    return [{ \"Position\": \"\", \"Location\": \"Maroc\", \"Domaine\": \"\", \"Domaines_non_considerees\": \"\" }]; // Fallback\n  }\n}).flat();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        600
+      ],
+      "id": "2aa1a0bb-df16-4b67-a77a-968c8ffe231e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=la recherche est commencé pour des  {{ $json.Position }} {{ $json.Domaine }} dans {{ $json.Location }} en excluant {{ ($json.DNC || 'rien').replace(/-/g, '') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        940,
+        380
+      ],
+      "id": "64f662ae-f6eb-46b7-b236-1f7417b10b7a",
+      "name": "Respond to Webhook",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define lists of common keywords for empty fields\nconst positionKeywords = ['CEO', 'Manager', 'Director', 'Owner', 'President', 'Engineer', 'Founder', 'VP', 'Head', 'Lead'];\nconst domainKeywords = ['AI', 'Full Stack', 'Software', 'Marketing', 'Data Science', 'Operations', 'Product Management', 'Sales', 'Finance', 'HR'];\n\n// Generic prefixes and suffixes for creating variations\nconst positionPrefixes = ['Senior', 'Lead', 'Head of', 'Chief', 'Principal', 'Executive'];\nconst positionSuffixes = ['Manager', 'Specialist', 'Expert', 'Professional', 'Officer', 'Consultant'];\n\nconst domainPrefixes = ['Enterprise', 'B2B', 'B2C', 'Digital', 'Advanced', 'Modern'];\nconst domainSuffixes = ['Solutions', 'Technology', 'Platform', 'Services', 'Development', 'Systems'];\n\n// Location variations for different search approaches (all lowercase keys)\nconst locationVariations = {\n  'maroc': ['Morocco', 'Maroc'],\n  'morocco': ['Morocco', 'Maroc'],\n  'france': ['France'],\n  'canada': ['Canada'],\n  'spain': ['Spain'],\n  'dubai': ['Dubai', 'UAE', 'United Arab Emirates'],\n  'uae': ['UAE', 'Dubai','United Arab Emirates'],\n  'united arab emirates': ['United Arab Emirates', 'UAE', 'Dubai'],\n  'qatar': ['Qatar'],\n  'bahrain': ['Bahrain'],\n  'kuwait': ['Kuwait']\n};\n\n// Country/location codes mapping (lowercase keys)\nconst locationCodes = {\n  'maroc': 'ma',\n  'morocco': 'ma',\n  'france': 'fr',\n  'spain': 'es',\n  'dubai': 'ae',\n  'uae': 'ae',\n  'united arab emirates': 'ae',\n  'qatar': 'qa',\n  'bahrain': 'bh',\n  'kuwait': 'kw',\n  'canada': 'ca',\n  'usa': 'us',\n  'united states': 'us',\n  'uk': 'gb',\n  'united kingdom': 'gb'\n};\n\n// Helper function to pick a random element from an array\nfunction getRandomElement(arr) {\n  return arr[Math.floor(Math.random() * arr.length)];\n}\n\n// Helper function to ensure unique selections\nfunction getUniqueElements(arr, count, exclude = []) {\n  const available = arr.filter(item => !exclude.includes(item));\n  const result = [];\n  for (let i = 0; i < Math.min(count, available.length); i++) {\n    const randomIndex = Math.floor(Math.random() * available.length);\n    result.push(available.splice(randomIndex, 1)[0]);\n  }\n  return result;\n}\n\n// Function to create position variations using generic prefixes/suffixes\nfunction createPositionVariation(basePosition) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(positionPrefixes)} ${basePosition}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${basePosition} ${getRandomElement(positionSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${basePosition}\"`;\n  } else {\n    // Keep original (30% chance)\n    return basePosition;\n  }\n}\n\n// Function to create domain variations using generic prefixes/suffixes\nfunction createDomainVariation(baseDomain) {\n  const rand = Math.random();\n  \n  if (rand < 0.3) {\n    // Add prefix (30% chance)\n    return `${getRandomElement(domainPrefixes)} ${baseDomain}`;\n  } else if (rand < 0.5) {\n    // Add suffix (20% chance)\n    return `${baseDomain} ${getRandomElement(domainSuffixes)}`;\n  } else if (rand < 0.7) {\n    // Add quotes (20% chance)\n    return `\"${baseDomain}\"`;\n  } else {\n    // Keep original (30% chance)\n    return baseDomain;\n  }\n}\n\n// Function to create location variations\nfunction createLocationVariation(baseLocation) {\n  const locationKey = baseLocation.toLowerCase();\n  const variations = locationVariations[locationKey] || [baseLocation];\n  const selectedLocation = getRandomElement(variations);\n  \n  // 30% chance to add quotes around location\n  return Math.random() < 0.3 ? `\"${selectedLocation}\"` : selectedLocation;\n}\n\n// Function to get country code for location\nfunction getLocationCode(location) {\n  const locationKey = location.toLowerCase();\n  return locationCodes[locationKey] || 'unknown';\n}\n\n// Function to format DNC (Do Not Contact) domains for Google search exclusion\nfunction formatDNC(dncInput) {\n  if (!dncInput || dncInput.trim() === '') {\n    return '';\n  }\n  \n  console.log('Original DNC input:', dncInput); // Debug log\n  \n  // Split by semicolon, trim whitespace, and add '-' prefix to each domain\n  const formatted = dncInput.split(';')\n    .map(domain => domain.trim())\n    .filter(domain => domain !== '') // Remove empty strings\n    .map(domain => `-${domain}`)\n    .join(' ');\n  \n  console.log('Formatted DNC output:', formatted); // Debug log\n  return formatted;\n}\n\n// Get input data and normalize to lowercase for processing\nconst positionInput = ($input.first().json.Position || '').trim();\nconst locationInput = ($input.first().json.Location || 'Maroc').trim(); \nconst domainInput = ($input.first().json.Domaine || '').trim();\nconst dncInput = ($input.first().json['Domaines non considéreées'] || '').trim();\nconst formattedDNC = formatDNC(dncInput); // Format DNC for Google search exclusion\n\n// Check if all fields are filled\nconst allFieldsFilled = positionInput && locationInput && domainInput;\n\n// Generate 10 unique outputs\nconst outputs = [];\nconst usedPositions = positionInput ? [positionInput] : [];\nconst usedDomains = domainInput ? [domainInput] : [];\nconst usedCombinations = new Set(); // Track unique combinations to avoid duplicates\n\nfor (let i = 0; i < 10; i++) {\n  let position, domain, location;\n  \n  if (i === 0) {\n    // First result: Always use exact user input (no modifications)\n    position = positionInput || getRandomElement(positionKeywords);\n    domain = domainInput || getRandomElement(domainKeywords);\n    location = locationInput;\n    \n    // Add to used lists if they were generated randomly\n    if (!positionInput) usedPositions.push(position);\n    if (!domainInput) usedDomains.push(domain);\n    \n  } else if (allFieldsFilled) {\n    // All fields are filled - create variations using prefixes/suffixes/quotes\n    position = createPositionVariation(positionInput);\n    domain = createDomainVariation(domainInput);\n    location = createLocationVariation(locationInput);\n    \n    // Ensure we don't create the exact same combination\n    const combination = `${position}-${domain}-${location}`;\n    let attempts = 0;\n    while (usedCombinations.has(combination) && attempts < 5) {\n      position = createPositionVariation(positionInput);\n      domain = createDomainVariation(domainInput);\n      location = createLocationVariation(locationInput);\n      attempts++;\n    }\n    usedCombinations.add(combination);\n    \n  } else {\n    // Some fields are empty - use random selection with uniqueness\n    position = positionInput || getRandomElement(positionKeywords.filter(p => !usedPositions.includes(p)));\n    domain = domainInput || getRandomElement(domainKeywords.filter(d => !usedDomains.includes(d)));\n    location = locationInput;\n    \n    // Apply variations even when using defaults (but not for first result)\n    if (!positionInput && position) {\n      position = Math.random() < 0.4 ? createPositionVariation(position) : position;\n      usedPositions.push(position);\n    }\n    if (!domainInput && domain) {\n      domain = Math.random() < 0.4 ? createDomainVariation(domain) : domain;\n      usedDomains.push(domain);\n    }\n    if (location) {\n      location = createLocationVariation(location);\n    }\n  }\n  \n  outputs.push({\n    Position: position,\n    Location: location,\n    Domaine: domain,\n    DNC: formattedDNC, // Use formatted DNC with '-' prefixes\n    CountryCode: getLocationCode(locationInput), // Add country code based on original input\n    // Add a unique identifier for debugging\n    queryVariant: i + 1\n  });\n}\n\n// Return the 10 outputs\nreturn outputs.map(output => ({ json: output }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        760
+      ],
+      "id": "74e08856-e8f7-4dda-9cb1-cc5072b9089f",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "definitions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5180,
+        3260
+      ],
+      "id": "ee3cb978-4512-4c8f-a5b9-fd020a2ad031",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "definitions",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "key",
+              "cssSelector": "dt"
+            },
+            {
+              "key": "value",
+              "cssSelector": "dd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        5380,
+        3260
+      ],
+      "id": "29ea1def-af0a-43ce-b95d-de5c0b06c018",
+      "name": "HTML5"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "employee",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5140,
+        3580
+      ],
+      "id": "2c149c41-87cc-46ce-bdc2-400cd09435b5",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "employee",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "name",
+              "cssSelector": "h3"
+            },
+            {
+              "key": "title",
+              "cssSelector": "h4"
+            },
+            {
+              "key": "linkedin_url",
+              "cssSelector": "a",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        5520,
+        3620
+      ],
+      "id": "e9df3b71-9b5c-43e1-90a9-7af5f21281c6",
+      "name": "HTML7"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "employees",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        5860,
+        3640
+      ],
+      "id": "ea394587-d9bf-4e51-a4de-71e5a5be6f4d",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "article",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5120,
+        3980
+      ],
+      "id": "b051c637-6626-4f67-bdc5-85dfa4794cbf",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "article",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "link",
+              "cssSelector": ".main-feed-card__overlay-link",
+              "returnValue": "attribute",
+              "attribute": "href"
+            },
+            {
+              "key": "content",
+              "cssSelector": "[data-test-id=\"main-feed-activity-card__commentary\"]"
+            },
+            {
+              "key": "reshared_content",
+              "cssSelector": "[data-test-id=\"feed-reshare-content__commentary\"]"
+            },
+            {
+              "key": "time",
+              "cssSelector": "time",
+              "skipSelectors": "span"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        5400,
+        3980
+      ],
+      "id": "25ecb229-de78-410b-a59f-162ccd66375d",
+      "name": "HTML9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "db889fcb-eb49-4c25-aed7-19d00c63c23c",
+              "leftValue": "={{ DateTime.fromISO($json.posted_at).toSeconds() }}",
+              "rightValue": "={{ $now.minus(3, 'months').toSeconds() }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        6020,
+        3980
+      ],
+      "id": "c9d4b340-5dfa-4798-aaf4-c5388526ff83",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "updates",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        6280,
+        3920
+      ],
+      "id": "b70c0fd4-3c42-4bf9-a257-5371291b9191",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "products",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        5840,
+        4240
+      ],
+      "id": "76aa8674-2d46-4239-9ee1-0f08b84eff67",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "products",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5300,
+        4620
+      ],
+      "id": "8d9e0993-112d-4e26-affc-90abec84742a",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "affiliate_pages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5300,
+        5020
+      ],
+      "id": "524f675f-d56a-4c3b-b468-1f178d5f09b3",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "affiliate_pages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        5960,
+        5020
+      ],
+      "id": "d98bee62-f98a-4a28-99b3-7755875c1576",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        7240,
+        3840
+      ],
+      "id": "59fe7271-c8c9-4798-93c7-8eebc08ad463",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $env['GOOGLE_API_KEY'] }}"
+            },
+            {
+              "name": "cx",
+              "value": "={{ $env['GOOGLE_CSE_ID'] }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ `site:linkedin.com/company ${$json.Company} ${$json.Country}` }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        4000
+      ],
+      "id": "652b9bcb-5beb-4984-b72e-6aec98943866",
+      "name": "Google X-Ray Search",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a5c5157-a1de-46c9-b6fa-c3f999a76d1e",
+              "leftValue": "={{ $json.searchInformation.totalResults.toNumber() }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "ec5a091f-e9c1-4ed5-8e0e-af7ddcccf0db",
+              "leftValue": "={{ $json.items[0].link }}",
+              "rightValue": "linkedin.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        4000
+      ],
+      "id": "f865cee9-ae96-4550-9407-526193325630",
+      "name": "Results?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.linkedin_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "referer",
+              "value": "https://www.google.com/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2940,
+        4000
+      ],
+      "id": "1f0f442d-8b94-4152-a073-1dd4f9c20718",
+      "name": "Scrape LinkedIn",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "about_us",
+              "cssSelector": ".core-section-container[data-test-id=\"about-us\"]",
+              "returnValue": "html"
+            },
+            {
+              "key": "employees",
+              "cssSelector": ".core-section-container[data-test-id=\"employees-at\"]",
+              "returnValue": "html"
+            },
+            {
+              "key": "updates",
+              "cssSelector": ".core-section-container[data-test-id=\"updates\"]",
+              "returnValue": "html"
+            },
+            {
+              "key": "info",
+              "cssSelector": ".top-card-layout__card .top-card-layout__entity-info:nth-child(1)",
+              "returnValue": "html"
+            },
+            {
+              "key": "products",
+              "cssSelector": ".core-section-container > .core-section-container__content > .base-card",
+              "returnValue": "html",
+              "returnArray": true
+            },
+            {
+              "key": "crunchbase",
+              "cssSelector": "a[data-tracking-control-name=\"funding_crunchbase\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            },
+            {
+              "key": "affiliate_pages",
+              "cssSelector": "section[data-test-id=\"affiliated-pages\"] > div > ul > li",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3400,
+        4000
+      ],
+      "id": "87dbf13c-c8da-43d7-a220-576a04837dcb",
+      "name": "Extract main blocks"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "info",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "name",
+              "cssSelector": "h1"
+            },
+            {
+              "key": "category",
+              "cssSelector": "h2"
+            },
+            {
+              "key": "summary",
+              "cssSelector": "h4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        4320,
+        2880
+      ],
+      "id": "603ca6d0-d8d1-4bc9-9d27-a274b3682c2d",
+      "name": "Extract info",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "about_us",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "description",
+              "cssSelector": "p"
+            },
+            {
+              "key": "definitions",
+              "cssSelector": "dl > div",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        4320,
+        3300
+      ],
+      "id": "036954ee-42b1-4df3-b5c0-82910ee4ae97",
+      "name": "Extract about us",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "employees",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "employee",
+              "cssSelector": "ul li",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        4100,
+        3580
+      ],
+      "id": "df5f1119-c72e-4c58-8c0f-a2dfa90f6438",
+      "name": "Extract employees",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "updates",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "article",
+              "cssSelector": "div[data-id=\"entire-feed-card-link\"]",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        4080,
+        3980
+      ],
+      "id": "e62bb2b3-78a6-46b1-8116-5f29ad41e0ad",
+      "name": "Extract updates",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a990f72-dc16-464c-b35c-1573c38b2d18",
+              "leftValue": "={{ $json.products }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4400,
+        4640
+      ],
+      "id": "8c200e9d-6c5c-48f5-a2e8-491f4980737b",
+      "name": "Are there products?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4b4a37dd-46e9-46f3-8dc6-1767a75375c2",
+              "leftValue": "={{ $json.affiliate_pages }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4400,
+        5040
+      ],
+      "id": "471b528c-9e94-4608-b8ec-3376d65f6b2f",
+      "name": "Are there affiliated pages?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fa0ab4a-ca7c-47ab-90cc-75f8fe83b372",
+              "name": "affiliate_pages",
+              "value": "[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5300,
+        5240
+      ],
+      "id": "d7a4d8b6-ba8e-4a57-b0d3-8df1b60a56e3",
+      "name": "No affiliated pages"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d5b89ba-9161-4999-bf63-8b0dad2d0f86",
+              "name": "products",
+              "value": "=[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5300,
+        4800
+      ],
+      "id": "da9c7f0b-2768-49e2-b700-03628a9b6c96",
+      "name": "No products"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "products",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "name",
+              "cssSelector": "h3",
+              "skipSelectors": "img"
+            },
+            {
+              "key": "category",
+              "cssSelector": "h4 a"
+            },
+            {
+              "key": "description",
+              "cssSelector": "p"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        5520,
+        4620
+      ],
+      "id": "e0c7c26f-1a1f-4957-a1ad-20de17ac6357",
+      "name": "Extract products"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "affiliate_pages",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "h3"
+            },
+            {
+              "key": "link",
+              "cssSelector": "a",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        5520,
+        5020
+      ],
+      "id": "4507c6f7-7f11-4cb2-ba67-eccaa4028d52",
+      "name": "Extract affiliated pages"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        7760,
+        5280
+      ],
+      "id": "d6826b62-0aca-4018-8267-4c91fb5d5bdd",
+      "name": "Wait 5s",
+      "webhookId": "0c941134-e324-4857-8e36-2ded681a4b38"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11f75f95-038e-49c4-b7b3-2eb765ad2d1b",
+              "name": "linkedin_url",
+              "value": "={{ $json.items[0].link }}",
+              "type": "string"
+            },
+            {
+              "id": "dd80b252-cd03-42f4-be70-069f565d046a",
+              "name": "description",
+              "value": "={{ $json.items[0].pagemap.metatags[0]['og:description'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        3980
+      ],
+      "id": "be44745a-9e20-4dbb-a12b-43c02ebd29a8",
+      "name": "Set Linkedin URL from the first result"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const companySlugMatch = item.json.linkedin_url.match(/[^linkedin]+linkedin\\.com\\/company\\/([^\\/]+)/);\n  if (companySlugMatch) {\n    const companySlug = companySlugMatch[1];\n    item.json.linkedin_url = `https://www.linkedin.com/company/${companySlug}`;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        3980
+      ],
+      "id": "d5dd69da-3185-41e6-83af-5c1dcbbcb7d5",
+      "name": "Clean linkedin url"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17e760be-a45a-43e1-999f-18ac321dcdde",
+              "leftValue": "={{ $json.definitions }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4780,
+        3300
+      ],
+      "id": "0a5ccf90-702a-4711-9efd-3d09feab5333",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "905a9082-fd1e-4961-acdd-9233a3e15aa0",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5840,
+        3420
+      ],
+      "id": "6c6cacaa-e556-43b2-87ce-02bbc00e469d",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9839990c-6444-433b-8dd9-42c1b264be1e",
+              "leftValue": "={{ $json.article }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4500,
+        4140
+      ],
+      "id": "809b18da-fbd2-4612-969c-cf3a91285255",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98037fb5-6297-4970-810f-626219a27964",
+              "name": "updates",
+              "value": "=[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5060,
+        4220
+      ],
+      "id": "aedd5832-7bb4-465a-8090-d34fe57fa3bb",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Using the following company information, create a professional, concise outreach message (100-150 words) for LinkedIn and email in the main language of the headquarters' country:\n\n**Company Name**: {{ $json.data[0].name }}\n**Category**: {{ $json.data[0].category }}\n**Summary**: {{ $json.data[0].summary }}\n**Website**: {{ $json.data[0].Website }}\n**Industry**: {{ $json.data[0].Industry }}\n**Company Size**: {{ $json.data[0]['Company size'] }}\n**Headquarters**: {{ $json.data[0].Headquarters }}\n**Type**: {{ $json.data[0].Type }}\n**Year Founded**: {{ $json.data[0].Founded }}\n**Specialties**: {{ $json.data[0].Specialties }}\n**Description**: {{ $json.data[0].description }}\n**Employee Info**: {{ $json.data[0].employees[0] }}\n**LinkedIn Updates**: {{ $json.data[0].updates }}\n**Products**: {{ $json.data[0].products }}\n**Affiliate Pages**: {{ $json.data[0].affiliate_pages }}\n\nOutput a message highlighting the company's unique value or recent achievements, with a call-to-action to connect or explore collaboration. Use the main language of the headquarters . Output only the message text with no introductions , explanation or notes ",
+        "options": {
+          "systemMessage": "You are an AI agent tasked with crafting professional and concise outreach messages for LinkedIn and email. Using the provided company information (name, category, summary, locations, website, industry, company size, headquarters, type, year founded, specialties, description, employee info, LinkedIn updates, products, affiliate pages), create a personalized, engaging message in the main language of the headquarters' country. The message must be 100-150 words, highlight the company's unique value or recent achievements, and include a call-to-action to connect or explore collaboration. Use a professional and approachable tone, avoid generic phrases, and include only provided information. Output only the message text with no introductions , explanation or notes . Don't say anything like : \" Here is a outreach message in English: \""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        7500,
+        3980
+      ],
+      "id": "c51bf539-48ba-4d0b-b94a-972f0f887237",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Company"
+            },
+            {
+              "name": "Country"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -140,
+        4000
+      ],
+      "id": "43c858ef-3537-4613-9cdc-dd84dc5a8595",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  if (item.json.area_html) {\n    const parts = item.json.area_html.split('<span class=\"before:middot\"></span>');\n  item.json.area = parts?.[0]?.trim()\n  item.json.followers = parts?.[1]?.trim()\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6460,
+        2880
+      ],
+      "id": "bda1b5d7-1e85-4b75-aad4-7f3242a5e796",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = {};\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  let value = item.json.value;\n  const key = item.json.key;\n  if (key === 'Website') {\n    value = value.split('\\n')[0]\n  }\n  data[item.json.key] = value;\n}\n\nreturn {\n  ...data,\n  description: $('Extract about us').first().json.description\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5640,
+        3300
+      ],
+      "id": "0a877465-b5f8-449a-9f1a-978a36127f0b",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  Object.keys(item.json).forEach(key => {\n    if (!item.json[key]) {\n      delete item.json[key]\n    }\n  })\n  \n  let time;\n  if (item.json.time.endsWith('h')) {\n    time = { hours: parseInt(item.json.time) }\n  }\n  else if (item.json.time.endsWith('d')) {\n    time = { days: parseInt(item.json.time) }\n  } else if (item.json.time.endsWith('w')) {\n    time = { weeks: parseInt(item.json.time) }\n  } else if (item.json.time.endsWith('mo')) {\n    time = { months: parseInt(item.json.time) }\n  }\n\n  if (time) {\n    item.json.posted_at = $now.minus(time).toFormat('yyyy-MM-dd')\n  }\n\n  delete item.json.time\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5740,
+        3980
+      ],
+      "id": "ba28d0e0-4882-43cc-a157-966b8bf56bbb",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 6,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        7020,
+        3760
+      ],
+      "id": "660eefe4-125c-44db-8a60-b273dec1b925",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        160,
+        4000
+      ],
+      "id": "a102e056-d449-482a-ab70-485a86674790",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2313cbcb-a3cc-4bd2-8d02-cad37db9473f",
+              "leftValue": "={{ $json.employee }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4320,
+        3580
+      ],
+      "id": "56a4b942-cc79-4c25-b110-facff7841ebf",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e16c3b2-650c-4a58-b5fd-d138af9775ce",
+              "name": "employees",
+              "value": "=[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6140,
+        3760
+      ],
+      "id": "ed00be95-f9c7-4ec7-a7e3-9e1f12bb2e65",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.3,
+          "numPredict": 200
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        7460,
+        4180
+      ],
+      "id": "595cbe6c-6d09-4cc2-a851-c9d772279b00",
+      "name": "Ollama Chat Model3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 2780,
+        "width": 8320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        2840
+      ],
+      "id": "43531913-1638-4170-a565-e2d78cfa3b1a",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search Google": {
+      "main": [
+        [
+          {
+            "node": "Extract Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Results": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagination": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Pagination Check": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Pagination",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "Search Google",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Profile Qualifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Pagination Check1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Company name Finder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pagination Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Company name Finder",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company name Finder": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profile Qualifier": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Profile Qualifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets4": {
+      "main": [
+        [
+          {
+            "node": "Pagination Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagination Check1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTML5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML5": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "HTML7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML7": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "HTML9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML9": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "Extract products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Extract affiliated pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google X-Ray Search": {
+      "main": [
+        [
+          {
+            "node": "Results?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Results?": {
+      "main": [
+        [
+          {
+            "node": "Set Linkedin URL from the first result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Extract main blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract main blocks": {
+      "main": [
+        [
+          {
+            "node": "Extract info",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract about us",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract employees",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract updates",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Are there products?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Are there affiliated pages?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract info": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract about us": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract employees": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract updates": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Are there products?": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Are there affiliated pages?": {
+      "main": [
+        [
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No affiliated pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No affiliated pages": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "No products": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Extract products": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract affiliated pages": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Linkedin URL from the first result": {
+      "main": [
+        [
+          {
+            "node": "Clean linkedin url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean linkedin url": {
+      "main": [
+        [
+          {
+            "node": "Scrape LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Google X-Ray Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Casablanca",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "982dde38-6c89-4da9-9f94-07d65add8f19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "23PcTjiy2sdStZ15",
+  "tags": []
+}

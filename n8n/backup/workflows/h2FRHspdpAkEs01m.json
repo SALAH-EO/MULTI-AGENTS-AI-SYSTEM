@@ -1,0 +1,1522 @@
+{
+  "name": "Sales Closer",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "854f9d92-ca49-4d1a-95ce-150c1a1b2509",
+              "name": "Name",
+              "value": "={{ $('Start').item.json.shipping_address.first_name }} {{ $('Start').item.json.shipping_address.last_name }} ",
+              "type": "string"
+            },
+            {
+              "id": "27585ff5-ecae-46ef-8922-ad67f4dcb839",
+              "name": "Adress",
+              "value": "={{ $('Start').item.json.shipping_address.address1 }}",
+              "type": "string"
+            },
+            {
+              "id": "c3d09d37-4db9-4aec-a6ef-f974304e1248",
+              "name": "Phone",
+              "value": "={{ $('Start').item.json.shipping_address.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "42a0bf13-81ae-4a75-9dc4-00a391ad66c9",
+              "name": "Email",
+              "value": "={{ $('Start').item.json.contact_email }}",
+              "type": "string"
+            },
+            {
+              "id": "c1001eae-bb92-4ecd-b25c-e6e1a8749b2b",
+              "name": "Order Id",
+              "value": "={{ $('Start').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "6671300f-7835-4e88-98fc-4780a6d1f799",
+              "name": "Order",
+              "value": "={{ $json.items_bought_string }}",
+              "type": "string"
+            },
+            {
+              "id": "b598c56f-7f66-4411-a77c-e1957007702c",
+              "name": "Price",
+              "value": "={{ $('Start').item.json.total_line_items_price }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        96
+      ],
+      "id": "a06409b9-ca2e-44af-b84c-94a43af836c9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the array of all input items from the previous node.\nconst inputItems = $input.all();\n\n// Assuming you're only processing one order at a time,\n// get the first order object from the input.\nconst order = inputItems[0].json;\n\nlet itemsString = '';\n\n// Check if the order has 'line_items' and if it is a valid array.\nif (order.line_items && Array.isArray(order.line_items)) {\n  // Map the array of line item objects to a new array of just the item names.\n  const itemNames = order.line_items.map(item => item.name);\n\n  // Join the names into a single string.\n  itemsString = itemNames.join(', ');\n}\n\n// Return the final string as a single output item.\nreturn [{\n  json: {\n    items_bought_string: itemsString\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        96
+      ],
+      "id": "72f83c23-fc58-40ae-9e17-5184e65fab64",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "topic": "orders/create"
+      },
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        96
+      ],
+      "id": "e4b55e4d-409f-4917-a18c-808e846cc475",
+      "name": "Shopify Trigger",
+      "webhookId": "acd87a89-7442-47a2-9124-9108296d050a",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "DB1VmHr3F6h9StgD",
+          "name": "Shopify Access Token account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $json['Order Id'] }}",
+            "Order": "={{ $json.Order }}",
+            "Price": "={{ $json.Price }}",
+            "Name": "={{ $json.Name }}",
+            "Phone": "='{{ $json.Phone }}",
+            "Adress": "={{ $json.Adress }}",
+            "Email": "={{ $json.Email }}",
+            "Statut": "non confirmé"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        96
+      ],
+      "id": "08cf1cda-f828-4c25-9048-08975a0b03ae",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $json.Phone }}",
+        "message": "=Bonjour {{ $json.Name }}, c'est votre agent Sales .\nVous avez effectué récemment un achat pour  {{ $json.Order }} de prix total {{ $json.Price }} . Si tout est correct merci de confirmer l'ordre via le bouton .\nEmail : {{ $json.Email }}\nAdresse : {{ $json.Adress }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Oui je confirme",
+            "disapproveLabel": "Non"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        992,
+        112
+      ],
+      "id": "36855584-77b8-4362-8c0b-baddaae8aa6c",
+      "name": "Send message and wait for response",
+      "webhookId": "e6fd2a0d-3a8e-4fd8-b594-0a4b874a8f8c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "92ad0d1b-b842-490e-918e-4916eb47e5a1",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        112
+      ],
+      "id": "135c4cf8-f5a6-4e76-ad32-b611aff55089",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $('Start').item.json.shipping_address.phone }}",
+        "textBody": "Merci pour la confirmation . On va vous communiquer les nouveautés de votre ordre ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        -160
+      ],
+      "id": "90ff846e-83f9-40da-8792-19c22986fe5d",
+      "name": "Send message",
+      "webhookId": "d9edb260-cbe4-4d1c-ae85-514e332dd336",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $json.Phone }}",
+        "message": "=Bonjour {{ $json.Name }}, c'est votre agent Sales .\nVous avez effectué récemment un achat pour  {{ $json.Order }} de prix total {{ $json.Price }} . Si tout est correct merci de confirmer l'ordre via le bouton .\nEmail : {{ $json.Email }}\nAdresse : {{ $json.Adress }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Oui je confirme",
+            "disapproveLabel": "Non"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        208
+      ],
+      "id": "96735993-1b77-4c54-8e04-cdda4d983412",
+      "name": "Send message and wait for response1",
+      "webhookId": "e6fd2a0d-3a8e-4fd8-b594-0a4b874a8f8c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "92ad0d1b-b842-490e-918e-4916eb47e5a1",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        208
+      ],
+      "id": "6d053fdd-06b3-42cf-bb5f-2c0674aadb5a",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $('Start').item.json.id }}",
+            "Statut": "annulé"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2032,
+        320
+      ],
+      "id": "cd0de060-845e-49fd-b31b-0aa38fced2ec",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "delete",
+        "orderId": "={{ $('Start').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        320
+      ],
+      "id": "aadf4467-c0f7-4a35-8db6-155832943422",
+      "name": "Delete an order",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "DB1VmHr3F6h9StgD",
+          "name": "Shopify Access Token account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $('Start').item.json.shipping_address.phone }}",
+        "textBody": "Merci de refaire votre commande chez notre Store . Il était annulé parce qu'on a pas reçu une confirmation de votre part",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        320
+      ],
+      "id": "51755b2c-0c56-4c52-b237-bc5fedc6ad26",
+      "name": "Send message1",
+      "webhookId": "42961edb-10eb-4d5b-bb83-d5c31f291da7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $('Start').item.json.id }}",
+            "Statut": "confirmé"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1904,
+        -160
+      ],
+      "id": "1c843b48-c76f-472c-8d5c-3b2dbe23844c",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e0400870-46f5-473f-9c77-f130de247671",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        16
+      ],
+      "id": "a52f168c-8a79-4756-943c-4eef4cf6fdcf",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $('Start').item.json.id }}",
+            "Statut": "annulé"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        32
+      ],
+      "id": "31d71b4a-a64c-47a5-934d-ae38d63dc40d",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "delete",
+        "orderId": "={{ $('Start').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        32
+      ],
+      "id": "629fdc06-f4de-4c5a-bf20-69403abfdfad",
+      "name": "Delete an order1",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "DB1VmHr3F6h9StgD",
+          "name": "Shopify Access Token account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $('Start').item.json.shipping_address.phone }}",
+        "textBody": "Désolé Merci de refaire votre commande chez notre Store en correctant les informations erronées ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        32
+      ],
+      "id": "bec16c79-1935-4b4d-94ed-defd123eb5e5",
+      "name": "Send message3",
+      "webhookId": "42961edb-10eb-4d5b-bb83-d5c31f291da7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $('Start').item.json.shipping_address.phone }}",
+        "textBody": "Merci pour la confirmation . On va vous communiquer les nouveautés de votre ordre ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -16
+      ],
+      "id": "f68bfa8b-d6b5-44ce-9971-776f3c7fb636",
+      "name": "Send message2",
+      "webhookId": "d9edb260-cbe4-4d1c-ae85-514e332dd336",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $('Start').item.json.id }}",
+            "Statut": "confirmé"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2880,
+        -16
+      ],
+      "id": "1b790ab2-5319-4ea3-a585-a0473f9d50b8",
+      "name": "Append or update row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e0400870-46f5-473f-9c77-f130de247671",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        160
+      ],
+      "id": "2df8252d-f8a0-426b-a41b-5157a5e00392",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays",
+          "mode": "list",
+          "cachedResultName": "Sales Closer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9eTfZzhuSwQDVnTN7sRYzFG7nkwxBUJ4ZXz9vf4ays/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $('Start').item.json.id }}",
+            "Statut": "annulé"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order",
+              "displayName": "Order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adress",
+              "displayName": "Adress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2688,
+        176
+      ],
+      "id": "43584836-9f1b-4136-b3bf-17f4f3d82daa",
+      "name": "Append or update row in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "delete",
+        "orderId": "={{ $('Start').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        176
+      ],
+      "id": "53fed68a-5337-4a49-a2f0-3a718f020295",
+      "name": "Delete an order2",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "DB1VmHr3F6h9StgD",
+          "name": "Shopify Access Token account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $('Start').item.json.shipping_address.phone }}",
+        "textBody": "Désolé Merci de refaire votre commande chez notre Store en correctant les informations erronées ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        3104,
+        176
+      ],
+      "id": "2bb295b9-b11a-423e-9216-d3cca0a41333",
+      "name": "Send message4",
+      "webhookId": "42961edb-10eb-4d5b-bb83-d5c31f291da7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 4,
+              "triggerAtMinute": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -128
+      ],
+      "id": "a8f07cc8-f9a5-41eb-b5f7-b7310cf8b7d4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [ {\n    \"id\": 450789469,\n    \"admin_graphql_api_id\": \"gid://shopify/Order/450789469\",\n    \"app_id\": null,\n    \"browser_ip\": \"0.0.0.0\",\n    \"buyer_accepts_marketing\": false,\n    \"cancel_reason\": null,\n    \"cancelled_at\": null,\n    \"cart_token\": \"68778783ad298f1c80c3bafcddeea02f\",\n    \"checkout_id\": 901414060,\n    \"checkout_token\": \"bd5a8aa1ecd019dd3520ff791ee3a24c\",\n    \"client_details\": {\n      \"accept_language\": null,\n      \"browser_height\": null,\n      \"browser_ip\": \"0.0.0.0\",\n      \"browser_width\": null,\n      \"session_hash\": null,\n      \"user_agent\": null\n    },\n    \"closed_at\": null,\n    \"confirmation_number\": null,\n    \"confirmed\": true,\n    \"contact_email\": \"bob.norman@mail.example.com\",\n    \"created_at\": \"2008-01-10T11:00:00-05:00\",\n    \"currency\": \"USD\",\n    \"current_subtotal_price\": \"195.67\",\n    \"current_subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_additional_fees_set\": null,\n    \"current_total_discounts\": \"3.33\",\n    \"current_total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_duties_set\": null,\n    \"current_total_price\": \"199.65\",\n    \"current_total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_tax\": \"3.98\",\n    \"current_total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"customer_locale\": null,\n    \"device_id\": null,\n    \"discount_codes\": [\n      {\n        \"code\": \"TENOFF\",\n        \"amount\": \"10.00\",\n        \"type\": \"fixed_amount\"\n      }\n    ],\n    \"duties_included\": false,\n    \"email\": \"bob.norman@mail.example.com\",\n    \"estimated_taxes\": false,\n    \"financial_status\": \"partially_refunded\",\n    \"fulfillment_status\": null,\n    \"landing_site\": \"http://www.example.com?source=abc\",\n    \"landing_site_ref\": \"abc\",\n    \"location_id\": null,\n    \"merchant_business_entity_id\": \"MTU0ODM4MDAwOQ\",\n    \"merchant_of_record_app_id\": null,\n    \"name\": \"#1001\",\n    \"note\": null,\n    \"note_attributes\": [\n      {\n        \"name\": \"custom engraving\",\n        \"value\": \"Happy Birthday\"\n      },\n      {\n        \"name\": \"colour\",\n        \"value\": \"green\"\n      }\n    ],\n    \"number\": 1,\n    \"order_number\": 1001,\n    \"order_status_url\": \"https://jsmith.myshopify.com/548380009/orders/b1946ac92492d2347c6235b4d2611184/authenticate?key=imasecretipod\",\n    \"original_total_additional_fees_set\": null,\n    \"original_total_duties_set\": null,\n    \"payment_gateway_names\": [\n      \"bogus\"\n    ],\n    \"phone\": \"+557734881234\",\n    \"po_number\": \"ABC123\",\n    \"presentment_currency\": \"USD\",\n    \"processed_at\": \"2008-01-10T11:00:00-05:00\",\n    \"reference\": \"fhwdgads\",\n    \"referring_site\": \"http://www.otherexample.com\",\n    \"source_identifier\": \"fhwdgads\",\n    \"source_name\": \"web\",\n    \"source_url\": null,\n    \"subtotal_price\": \"597.00\",\n    \"subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"tags\": \"\",\n    \"tax_exempt\": false,\n    \"tax_lines\": [\n      {\n        \"price\": \"11.94\",\n        \"rate\": 0.06,\n        \"title\": \"State Tax\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"channel_liable\": null\n      }\n    ],\n    \"taxes_included\": false,\n    \"test\": false,\n    \"token\": \"b1946ac92492d2347c6235b4d2611184\",\n    \"total_cash_rounding_payment_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_cash_rounding_refund_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_discounts\": \"10.00\",\n    \"total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_line_items_price\": \"597.00\",\n    \"total_line_items_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_outstanding\": \"0.00\",\n    \"total_price\": \"598.94\",\n    \"total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_shipping_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tax\": \"11.94\",\n    \"total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tip_received\": \"0.00\",\n    \"total_weight\": 0,\n    \"updated_at\": \"2008-01-10T11:00:00-05:00\",\n    \"user_id\": null,\n    \"billing_address\": {\n      \"first_name\": \"Bob\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+1(502)-459-2181\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Norman\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Bob Norman\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"customer\": {\n      \"id\": 207119551,\n      \"email\": \"bob.norman@mail.example.com\",\n      \"created_at\": \"2025-07-01T14:37:24-04:00\",\n      \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n      \"first_name\": \"Bob\",\n      \"last_name\": \"Norman\",\n      \"state\": \"disabled\",\n      \"note\": null,\n      \"verified_email\": true,\n      \"multipass_identifier\": null,\n      \"tax_exempt\": false,\n      \"phone\": \"+16136120707\",\n      \"email_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": null,\n        \"consent_updated_at\": \"2004-06-13T11:57:11-04:00\"\n      },\n      \"sms_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": \"single_opt_in\",\n        \"consent_updated_at\": \"2024-01-01T07:00:00-05:00\",\n        \"consent_collected_from\": \"OTHER\"\n      },\n      \"tags\": \"Léon, Noël\",\n      \"currency\": \"USD\",\n      \"tax_exemptions\": [],\n      \"admin_graphql_api_id\": \"gid://shopify/Customer/207119551\",\n      \"default_address\": {\n        \"id\": 207119551,\n        \"customer_id\": 207119551,\n        \"first_name\": null,\n        \"last_name\": null,\n        \"company\": null,\n        \"address1\": \"Chestnut Street 92\",\n        \"address2\": \"\",\n        \"city\": \"Louisville\",\n        \"province\": \"Kentucky\",\n        \"country\": \"United States\",\n        \"zip\": \"40202\",\n        \"phone\": \"555-625-1199\",\n        \"name\": \"\",\n        \"province_code\": \"KY\",\n        \"country_code\": \"US\",\n        \"country_name\": \"United States\",\n        \"default\": true\n      }\n    },\n    \"discount_applications\": [\n      {\n        \"target_type\": \"line_item\",\n        \"type\": \"discount_code\",\n        \"value\": \"10.0\",\n        \"value_type\": \"fixed_amount\",\n        \"allocation_method\": \"across\",\n        \"target_selection\": \"all\",\n        \"code\": \"TENOFF\"\n      }\n    ],\n    \"fulfillments\": [\n      {\n        \"id\": 255858046,\n        \"admin_graphql_api_id\": \"gid://shopify/Fulfillment/255858046\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"location_id\": 655441491,\n        \"name\": \"#1001.0\",\n        \"order_id\": 450789469,\n        \"origin_address\": {},\n        \"receipt\": {\n          \"testcase\": true,\n          \"authorization\": \"123456\"\n        },\n        \"service\": \"manual\",\n        \"shipment_status\": \"in_transit\",\n        \"status\": \"failure\",\n        \"tracking_company\": \"USPS\",\n        \"tracking_number\": \"1Z1234512345123456\",\n        \"tracking_numbers\": [\n          \"1Z1234512345123456\"\n        ],\n        \"tracking_url\": \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\",\n        \"tracking_urls\": [\n          \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\"\n        ],\n        \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n        \"line_items\": [\n          {\n            \"id\": 466157049,\n            \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n            \"attributed_staffs\": [],\n            \"current_quantity\": 0,\n            \"fulfillable_quantity\": 0,\n            \"fulfillment_service\": \"manual\",\n            \"fulfillment_status\": null,\n            \"gift_card\": false,\n            \"grams\": 200,\n            \"name\": \"IPod Nano - 8gb - green\",\n            \"price\": \"199.00\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"product_exists\": true,\n            \"product_id\": 632910392,\n            \"properties\": [\n              {\n                \"name\": \"Custom Engraving Front\",\n                \"value\": \"Happy Birthday\"\n              },\n              {\n                \"name\": \"Custom Engraving Back\",\n                \"value\": \"Merry Christmas\"\n              }\n            ],\n            \"quantity\": 1,\n            \"requires_shipping\": true,\n            \"sku\": \"IPOD2008GREEN\",\n            \"taxable\": true,\n            \"title\": \"IPod Nano - 8gb\",\n            \"total_discount\": \"0.00\",\n            \"total_discount_set\": {\n              \"shop_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"variant_id\": 39072856,\n            \"variant_inventory_management\": \"shopify\",\n            \"variant_title\": \"green\",\n            \"vendor\": null,\n            \"tax_lines\": [\n              {\n                \"channel_liable\": null,\n                \"price\": \"3.98\",\n                \"price_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"rate\": 0.06,\n                \"title\": \"State Tax\"\n              }\n            ],\n            \"duties\": [],\n            \"discount_allocations\": [\n              {\n                \"amount\": \"3.34\",\n                \"amount_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"discount_application_index\": 0\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"line_items\": [\n      {\n        \"id\": 466157049,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - green\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [\n          {\n            \"name\": \"Custom Engraving Front\",\n            \"value\": \"Happy Birthday\"\n          },\n          {\n            \"name\": \"Custom Engraving Back\",\n            \"value\": \"Merry Christmas\"\n          }\n        ],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008GREEN\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 39072856,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"green\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.34\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 518995019,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/518995019\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 1,\n        \"fulfillable_quantity\": 1,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - red\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008RED\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 49148385,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"red\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 703073504,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - black\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008BLACK\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 457924702,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"black\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      }\n    ],\n    \"payment_terms\": null,\n    \"refunds\": [\n      {\n        \"id\": 509562969,\n        \"admin_graphql_api_id\": \"gid://shopify/Refund/509562969\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"note\": \"it broke during shipping\",\n        \"order_id\": 450789469,\n        \"processed_at\": \"2025-07-01T14:37:24-04:00\",\n        \"restock\": true,\n        \"total_additional_fees_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"total_duties_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"user_id\": 548380009,\n        \"order_adjustments\": [],\n        \"transactions\": [\n          {\n            \"id\": 179259969,\n            \"admin_graphql_api_id\": \"gid://shopify/OrderTransaction/179259969\",\n            \"amount\": \"209.00\",\n            \"authorization\": \"authorization-key\",\n            \"created_at\": \"2005-08-05T12:59:12-04:00\",\n            \"currency\": \"USD\",\n            \"device_id\": null,\n            \"error_code\": null,\n            \"gateway\": \"bogus\",\n            \"kind\": \"refund\",\n            \"location_id\": null,\n            \"message\": null,\n            \"order_id\": 450789469,\n            \"parent_id\": 801038806,\n            \"payment_id\": \"#1001.3\",\n            \"processed_at\": \"2005-08-05T12:59:12-04:00\",\n            \"receipt\": {},\n            \"source_name\": \"web\",\n            \"status\": \"success\",\n            \"test\": false,\n            \"user_id\": null\n          }\n        ],\n        \"refund_line_items\": [\n          {\n            \"id\": 104689539,\n            \"line_item_id\": 703073504,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.66,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 703073504,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - black\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008BLACK\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 457924702,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"black\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.33\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          },\n          {\n            \"id\": 709875399,\n            \"line_item_id\": 466157049,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.67,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 466157049,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - green\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [\n                {\n                  \"name\": \"Custom Engraving Front\",\n                  \"value\": \"Happy Birthday\"\n                },\n                {\n                  \"name\": \"Custom Engraving Back\",\n                  \"value\": \"Merry Christmas\"\n                }\n              ],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008GREEN\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 39072856,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"green\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.34\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          }\n        ],\n        \"duties\": [],\n        \"additional_fees\": []\n      }\n    ],\n    \"shipping_address\": {\n      \"first_name\": \"Salah\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+212643736231\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Eddine\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Salah Eddine\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"shipping_lines\": [\n      {\n        \"id\": 369256396,\n        \"carrier_identifier\": null,\n        \"code\": \"Free Shipping\",\n        \"discounted_price\": \"0.00\",\n        \"discounted_price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"is_removed\": false,\n        \"phone\": null,\n        \"price\": \"0.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"requested_fulfillment_service_id\": null,\n        \"source\": \"shopify\",\n        \"title\": \"Free Shipping\",\n        \"tax_lines\": [],\n        \"discount_allocations\": []\n      }\n    ]\n  } \n] ;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -80
+      ],
+      "id": "68e55ea0-5146-4595-8e2d-60337b9f51e7",
+      "name": "Start"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shopify Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message and wait for response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Delete an order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete an order": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Delete an order1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete an order1": {
+      "main": [
+        [
+          {
+            "node": "Send message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Delete an order2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete an order2": {
+      "main": [
+        [
+          {
+            "node": "Send message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Etc/UTC",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "6475f28f-d0d9-48ea-b29e-e4ce7fe5c9ab",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "h2FRHspdpAkEs01m",
+  "tags": []
+}

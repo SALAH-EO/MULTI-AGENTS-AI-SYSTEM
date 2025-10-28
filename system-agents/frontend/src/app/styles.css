@@ -1,0 +1,198 @@
+/* Existing styles (assumed from previous context) */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.toggle-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-label {
+  width: 48px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggle-label::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #3b82f6;
+}
+
+.toggle-checkbox:checked + .toggle-label::after {
+  transform: translateX(24px);
+}
+
+.node-card {
+  background-color: #154a7e;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .node-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.node-toggle-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.node-toggle-checkbox {
+  display: none;
+}
+
+.node-toggle-label {
+  width: 36px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.node-toggle-label::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.node-toggle-checkbox:checked + .node-toggle-label {
+  background-color: #22c55e;
+}
+
+.node-toggle-checkbox:checked + .node-toggle-label::after {
+  transform: translateX(16px);
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.dark .btn-primary {
+  background-color: #60a5fa;
+}
+
+.dark .btn-primary:hover {
+  background-color: #3b82f6;
+}
+
+/* New styles for scrollable node list */
+.scrollable-nodes {
+  max-height: 400px; /* Fixed height for the scrollable frame */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 0.5rem; /* Space for scrollbar */
+  border: 1px solid #e5e7eb; /* Light border for visibility */
+  border-radius: 0.375rem; /* Match card styling */
+  background-color: #374151; /* Light background */
+}
+
+/* Dark mode styles */
+.dark .scrollable-nodes {
+  border-color: #374151; /* Dark mode border */
+  background-color: #1f2937; /* Dark mode background */
+}
+
+/* Custom scrollbar styling for better aesthetics */
+.scrollable-nodes::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-nodes::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.dark .scrollable-nodes::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.scrollable-nodes::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.dark .scrollable-nodes::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.scrollable-nodes::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.dark .scrollable-nodes::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* New styles for header and logout button */
+header {
+  background-color: #1f2937; /* Matches dark mode background */
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #374151; /* Subtle border for separation */
+}
+
+header h1 {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-btn:hover {
+  background-color: #dc262622;
+  color: #dc2626;
+}

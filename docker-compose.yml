@@ -1,0 +1,210 @@
+version: "3.8"
+
+volumes:
+  n8n_storage:
+  postgres_storage:
+  ollama_storage:
+  qdrant_storage:
+  mongodb_data:
+  redis_data:
+
+networks:
+  demo:
+
+x-n8n: &service-n8n
+  image: n8n-python
+  networks:
+    demo: {}
+  environment:
+    - DB_TYPE=postgresdb
+    - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_USER=${POSTGRES_USER}
+    - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+    - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+    - SLACK_TEAM_ID=${SLACK_TEAM_ID}
+    - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    - GOOGLE_CSE_ID=${GOOGLE_CSE_ID}
+    - SHEET_ID=${SHEET_ID}
+    - N8N_DIAGNOSTICS_ENABLED=false
+    - N8N_PERSONALIZATION_ENABLED=false
+    - N8N_ENCRYPTION_KEY
+    - N8N_USER_MANAGEMENT_JWT_SECRET
+    - N8N_ENDPOINT_WEBHOOK_ALLOW_ORIGIN=*
+    - traefik.http.middlewares.cors.headers.customResponseHeaders.Access-Control-Allow-Origin=*
+    - traefik.http.middlewares.cors.headers.customResponseHeaders.Access-Control-Allow-Methods=GET, POST, OPTIONS
+    - traefik.http.middlewares.cors.headers.customResponseHeaders.Access-Control-Allow-Headers=DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
+    - traefik.http.routers.n8n.middlewares=cors@docker
+    - N8N_CORS_ENABLE=true
+    - N8N_CORS_ALLOWED_ORIGINS=http://localhost:*,http://127.0.0.1:*,http://0.0.0.0:*
+    - N8N_CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+    - N8N_CORS_ALLOWED_HEADERS=DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-N8N-API-KEY
+  links:
+    - postgres
+
+x-ollama: &service-ollama
+  image: ollama/ollama:latest
+  container_name: ollama
+  networks:
+    demo: {}
+  restart: unless-stopped
+  ports:
+    - 11434:11434
+  volumes:
+    - ollama_storage:/root/.ollama
+
+x-init-ollama: &init-ollama
+  image: ollama/ollama:latest
+  networks:
+    demo: {}
+  container_name: ollama-pull-llama
+  volumes:
+    - ollama_storage:/root/.ollama
+  entrypoint: /bin/sh
+  command:
+    - "-c"
+    - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.1; OLLAMA_HOST=ollama:11434 ollama pull nomic-embed-text"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    networks:
+      demo: {}
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  n8n-import:
+    <<: *service-n8n
+    container_name: n8n-import
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "n8n import:credentials --separate --input=/backup/credentials && n8n import:workflow --separate --input=/backup/workflows && rm -rf /backup/credentials/* /backup/workflows/*"
+    volumes:
+      - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  n8n:
+    <<: *service-n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - 5678:5678
+    volumes:
+      - n8n_storage:/home/node/.n8n
+      - ./n8n/backup:/backup
+      - ./shared:/data/shared
+    shm_size: 1gb
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      postgres:
+        condition: service_healthy
+      n8n-import:
+        condition: service_completed_successfully
+
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
+    networks:
+      demo: {}
+    restart: unless-stopped
+    ports:
+      - 6333:6333
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  ollama-cpu:
+    profiles: ["cpu"]
+    <<: *service-ollama
+
+  ollama-gpu:
+    profiles: ["gpu-nvidia"]
+    <<: *service-ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  ollama-pull-llama-cpu:
+    profiles: ["cpu"]
+    <<: *init-ollama
+    depends_on:
+      - ollama-cpu
+
+  ollama-pull-llama-gpu:
+    profiles: ["gpu-nvidia"]
+    <<: *init-ollama
+    depends_on:
+      - ollama-gpu
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    networks:
+      demo: {}
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      demo: {}
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+
+  app:
+    build:
+      context: ./system-agents # This is the build context
+      dockerfile: Dockerfile # Changed from .Dockerfile to Dockerfile
+    container_name: my-fullstack-app
+    networks:
+      demo: {}
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # FastAPI backend
+      - "3002:3000"  # Next.js frontend (external:internal)
+    environment:
+      # These variables are for the backend (FastAPI)
+      # REDIS_URL and MONGO_CONNECTION_STRING will now be loaded from .env via load_dotenv()
+      - N8N_BASE_URL=http://n8n:5678/api/v1 # Use service name for n8n
+      # Add environment variables needed by Next.js at runtime
+      # For Next.js public environment variables, they must be prefixed with NEXT_PUBLIC_
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000 # Frontend will call the backend via its service name
+      # Set HOST and PORT for Next.js to bind correctly within the container
+      - HOST=0.0.0.0
+      - PORT=3000
+    depends_on:
+      mongodb:
+        condition: service_started
+      n8n:
+        condition: service_started
+      redis:
+        condition: service_started
+    volumes: []
+    # The command is now handled by the Dockerfile's CMD instruction
+
+    # http://app:8000/webhook/n8n_execution_data

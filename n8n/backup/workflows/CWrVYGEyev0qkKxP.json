@@ -1,0 +1,583 @@
+{
+  "name": "LogistiTrack",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "getAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -624
+      ],
+      "id": "a1c51479-bac2-4b9a-aad4-76d4cf3130e2",
+      "name": "Get many orders",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "DB1VmHr3F6h9StgD",
+          "name": "Shopify Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1408,
+        -624
+      ],
+      "id": "95383ef4-8db9-4e51-b7d5-811807f72711",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79176180-de08-41a6-ac6b-5e19f45e950f",
+              "name": "Customer",
+              "value": "={{ $json.shipping_address.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b2f12172-880e-47ca-b759-6e9189fed2aa",
+              "name": "Order Id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "8562e7c3-409c-4012-bef5-42da8d7bfdd0",
+              "name": "Phone",
+              "value": "={{ $json.shipping_address.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "4c3a8374-e209-4848-bab6-034e19e86dbf",
+              "name": "Status",
+              "value": "={{ $json.fulfillments[0].shipment_status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        -448
+      ],
+      "id": "d23cc799-f3ba-49f9-a79d-85a69e98afeb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w",
+          "mode": "list",
+          "cachedResultName": "LogistiTrack",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order Id": "={{ $json['Order Id'] }}",
+            "Customer": "={{ $json.Customer }}",
+            "Phone": "='{{ $json.Phone }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [
+            "Order Id"
+          ],
+          "schema": [
+            {
+              "id": "Order Id",
+              "displayName": "Order Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        -448
+      ],
+      "id": "263266ae-eac8-4a51-af1a-2f4f880c286a",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 4,
+              "triggerAtMinute": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        -272
+      ],
+      "id": "9d8b4a81-c125-40d2-8a70-baa38e92b5c0",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w",
+          "mode": "list",
+          "cachedResultName": "LogistiTrack",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -512,
+        -272
+      ],
+      "id": "98e7ee47-22c6-4c16-ac9f-c6e7fd6375e7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $json.Phone }}",
+        "textBody": "=Votre Commande nombre  {{ $json['Order Id'] }} est {{ $json.Status }} actuellement . Consulter votre compte pour plus d'informations .",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -272
+      ],
+      "id": "70fa59c9-108e-4d02-a56e-133eabd6f5f7",
+      "name": "Send message",
+      "webhookId": "8c914282-6735-4d9c-b636-4d48d4a2cc5b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        -32
+      ],
+      "id": "78b3341c-e18b-4284-8f9f-bd6a401075d6",
+      "name": "WhatsApp Trigger",
+      "webhookId": "12c95cc9-6cd8-49e7-8ab3-db2ea3b8a5e5",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "8koIHHcDJR1Azv1g",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Message to analyze:\n{{ $json.messages[0].text.body }}\n\nInstructions:\nPlease analyze the message above, which can be in either English or French. Your task is to find and extract the order ID. The order ID is the unique identifier for a customer's order. It is typically a sequence of numbers, or letters and numbers, and is often preceded or followed by a phrase like \"Order ID:\", \"Order No.\", \"Numéro de commande:\", or \"Référence de commande:\".\nRespond with only the extracted ID. If no order ID is found, respond with \"N/A\".",
+        "options": {
+          "systemMessage": "You are an intelligent order-processing assistant. Your sole task is to analyze incoming messages and extract the order ID. The order ID is a unique identifier that can be a number, a combination of letters and numbers, or any other sequence that is explicitly labeled as an \"order ID,\" \"order number,\" or similar. The messages you receive may be in English or French. You must respond with only the extracted order ID and nothing else. If no order ID is found, you must respond with \"N/A\"."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -832,
+        -32
+      ],
+      "id": "b2922351-1a9d-406d-af54-7b5c948e7bc8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        176
+      ],
+      "id": "70cc8177-c9e7-42f3-b469-28c85e745e9f",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w",
+          "mode": "list",
+          "cachedResultName": "LogistiTrack",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TW2NH7FFv-l_tUILtUYTpxcgpHspb5N4s__1OGPB99w/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        -32
+      ],
+      "id": "f13de382-b345-4f60-9084-f4ab1fb9d02b",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "da29dd68-6f68-41c4-9b69-a07a50503c7d",
+              "leftValue": "={{ $json.Phone }}",
+              "rightValue": "=+{{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        -32
+      ],
+      "id": "9590a352-8f1a-4719-892d-68a8fa10de09",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "798192526710122",
+        "recipientPhoneNumber": "={{ $json.Phone }}",
+        "textBody": "=Votre Commande nombre  {{ $json['Order Id'] }} est {{ $json.Status }} actuellement . Consulter votre compte pour plus d'informations .",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "ecc07702-551b-4596-8aa4-9f05608e32bb",
+      "name": "Send message1",
+      "webhookId": "8c914282-6735-4d9c-b636-4d48d4a2cc5b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "YzBNI5OU8FSagTRt",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 4,
+              "triggerAtMinute": 19
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        -400
+      ],
+      "id": "8e91db3e-745e-46f8-8425-790086a9f5f5",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    \"id\": 450789460,\n    \"admin_graphql_api_id\": \"gid://shopify/Order/450789469\",\n    \"app_id\": null,\n    \"browser_ip\": \"0.0.0.0\",\n    \"buyer_accepts_marketing\": false,\n    \"cancel_reason\": null,\n    \"cancelled_at\": null,\n    \"cart_token\": \"68778783ad298f1c80c3bafcddeea02f\",\n    \"checkout_id\": 901414060,\n    \"checkout_token\": \"bd5a8aa1ecd019dd3520ff791ee3a24c\",\n    \"client_details\": {\n      \"accept_language\": null,\n      \"browser_height\": null,\n      \"browser_ip\": \"0.0.0.0\",\n      \"browser_width\": null,\n      \"session_hash\": null,\n      \"user_agent\": null\n    },\n    \"closed_at\": null,\n    \"confirmation_number\": null,\n    \"confirmed\": true,\n    \"contact_email\": \"bob.norman@mail.example.com\",\n    \"created_at\": \"2008-01-10T11:00:00-05:00\",\n    \"currency\": \"USD\",\n    \"current_subtotal_price\": \"195.67\",\n    \"current_subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_additional_fees_set\": null,\n    \"current_total_discounts\": \"3.33\",\n    \"current_total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_duties_set\": null,\n    \"current_total_price\": \"199.65\",\n    \"current_total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_tax\": \"3.98\",\n    \"current_total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"customer_locale\": null,\n    \"device_id\": null,\n    \"discount_codes\": [\n      {\n        \"code\": \"TENOFF\",\n        \"amount\": \"10.00\",\n        \"type\": \"fixed_amount\"\n      }\n    ],\n    \"duties_included\": false,\n    \"email\": \"bob.norman@mail.example.com\",\n    \"estimated_taxes\": false,\n    \"financial_status\": \"partially_refunded\",\n    \"fulfillment_status\": null,\n    \"landing_site\": \"http://www.example.com?source=abc\",\n    \"landing_site_ref\": \"abc\",\n    \"location_id\": null,\n    \"merchant_business_entity_id\": \"MTU0ODM4MDAwOQ\",\n    \"merchant_of_record_app_id\": null,\n    \"name\": \"#1001\",\n    \"note\": null,\n    \"note_attributes\": [\n      {\n        \"name\": \"custom engraving\",\n        \"value\": \"Happy Birthday\"\n      },\n      {\n        \"name\": \"colour\",\n        \"value\": \"green\"\n      }\n    ],\n    \"number\": 1,\n    \"order_number\": 1001,\n    \"order_status_url\": \"https://jsmith.myshopify.com/548380009/orders/b1946ac92492d2347c6235b4d2611184/authenticate?key=imasecretipod\",\n    \"original_total_additional_fees_set\": null,\n    \"original_total_duties_set\": null,\n    \"payment_gateway_names\": [\n      \"bogus\"\n    ],\n    \"phone\": \"+557734881234\",\n    \"po_number\": \"ABC123\",\n    \"presentment_currency\": \"USD\",\n    \"processed_at\": \"2008-01-10T11:00:00-05:00\",\n    \"reference\": \"fhwdgads\",\n    \"referring_site\": \"http://www.otherexample.com\",\n    \"source_identifier\": \"fhwdgads\",\n    \"source_name\": \"web\",\n    \"source_url\": null,\n    \"subtotal_price\": \"597.00\",\n    \"subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"tags\": \"\",\n    \"tax_exempt\": false,\n    \"tax_lines\": [\n      {\n        \"price\": \"11.94\",\n        \"rate\": 0.06,\n        \"title\": \"State Tax\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"channel_liable\": null\n      }\n    ],\n    \"taxes_included\": false,\n    \"test\": false,\n    \"token\": \"b1946ac92492d2347c6235b4d2611184\",\n    \"total_cash_rounding_payment_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_cash_rounding_refund_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_discounts\": \"10.00\",\n    \"total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_line_items_price\": \"597.00\",\n    \"total_line_items_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_outstanding\": \"0.00\",\n    \"total_price\": \"598.94\",\n    \"total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_shipping_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tax\": \"11.94\",\n    \"total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tip_received\": \"0.00\",\n    \"total_weight\": 0,\n    \"updated_at\": \"2008-01-10T11:00:00-05:00\",\n    \"user_id\": null,\n    \"billing_address\": {\n      \"first_name\": \"Bob\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+1(502)-459-2181\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Norman\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Bob Norman\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"customer\": {\n      \"id\": 207119551,\n      \"email\": \"bob.norman@mail.example.com\",\n      \"created_at\": \"2025-07-01T14:37:24-04:00\",\n      \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n      \"first_name\": \"Bob\",\n      \"last_name\": \"Norman\",\n      \"state\": \"disabled\",\n      \"note\": null,\n      \"verified_email\": true,\n      \"multipass_identifier\": null,\n      \"tax_exempt\": false,\n      \"phone\": \"+16136120707\",\n      \"email_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": null,\n        \"consent_updated_at\": \"2004-06-13T11:57:11-04:00\"\n      },\n      \"sms_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": \"single_opt_in\",\n        \"consent_updated_at\": \"2024-01-01T07:00:00-05:00\",\n        \"consent_collected_from\": \"OTHER\"\n      },\n      \"tags\": \"Léon, Noël\",\n      \"currency\": \"USD\",\n      \"tax_exemptions\": [],\n      \"admin_graphql_api_id\": \"gid://shopify/Customer/207119551\",\n      \"default_address\": {\n        \"id\": 207119551,\n        \"customer_id\": 207119551,\n        \"first_name\": null,\n        \"last_name\": null,\n        \"company\": null,\n        \"address1\": \"Chestnut Street 92\",\n        \"address2\": \"\",\n        \"city\": \"Louisville\",\n        \"province\": \"Kentucky\",\n        \"country\": \"United States\",\n        \"zip\": \"40202\",\n        \"phone\": \"555-625-1199\",\n        \"name\": \"\",\n        \"province_code\": \"KY\",\n        \"country_code\": \"US\",\n        \"country_name\": \"United States\",\n        \"default\": true\n      }\n    },\n    \"discount_applications\": [\n      {\n        \"target_type\": \"line_item\",\n        \"type\": \"discount_code\",\n        \"value\": \"10.0\",\n        \"value_type\": \"fixed_amount\",\n        \"allocation_method\": \"across\",\n        \"target_selection\": \"all\",\n        \"code\": \"TENOFF\"\n      }\n    ],\n    \"fulfillments\": [\n      {\n        \"id\": 255858046,\n        \"admin_graphql_api_id\": \"gid://shopify/Fulfillment/255858046\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"location_id\": 655441491,\n        \"name\": \"#1001.0\",\n        \"order_id\": 450789469,\n        \"origin_address\": {},\n        \"receipt\": {\n          \"testcase\": true,\n          \"authorization\": \"123456\"\n        },\n        \"service\": \"manual\",\n        \"shipment_status\": \"confirmed\",\n        \"status\": \"failure\",\n        \"tracking_company\": \"USPS\",\n        \"tracking_number\": \"1Z1234512345123456\",\n        \"tracking_numbers\": [\n          \"1Z1234512345123456\"\n        ],\n        \"tracking_url\": \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\",\n        \"tracking_urls\": [\n          \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\"\n        ],\n        \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n        \"line_items\": [\n          {\n            \"id\": 466157049,\n            \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n            \"attributed_staffs\": [],\n            \"current_quantity\": 0,\n            \"fulfillable_quantity\": 0,\n            \"fulfillment_service\": \"manual\",\n            \"fulfillment_status\": null,\n            \"gift_card\": false,\n            \"grams\": 200,\n            \"name\": \"IPod Nano - 8gb - green\",\n            \"price\": \"199.00\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"product_exists\": true,\n            \"product_id\": 632910392,\n            \"properties\": [\n              {\n                \"name\": \"Custom Engraving Front\",\n                \"value\": \"Happy Birthday\"\n              },\n              {\n                \"name\": \"Custom Engraving Back\",\n                \"value\": \"Merry Christmas\"\n              }\n            ],\n            \"quantity\": 1,\n            \"requires_shipping\": true,\n            \"sku\": \"IPOD2008GREEN\",\n            \"taxable\": true,\n            \"title\": \"IPod Nano - 8gb\",\n            \"total_discount\": \"0.00\",\n            \"total_discount_set\": {\n              \"shop_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"variant_id\": 39072856,\n            \"variant_inventory_management\": \"shopify\",\n            \"variant_title\": \"green\",\n            \"vendor\": null,\n            \"tax_lines\": [\n              {\n                \"channel_liable\": null,\n                \"price\": \"3.98\",\n                \"price_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"rate\": 0.06,\n                \"title\": \"State Tax\"\n              }\n            ],\n            \"duties\": [],\n            \"discount_allocations\": [\n              {\n                \"amount\": \"3.34\",\n                \"amount_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"discount_application_index\": 0\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"line_items\": [\n      {\n        \"id\": 466157049,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - green\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [\n          {\n            \"name\": \"Custom Engraving Front\",\n            \"value\": \"Happy Birthday\"\n          },\n          {\n            \"name\": \"Custom Engraving Back\",\n            \"value\": \"Merry Christmas\"\n          }\n        ],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008GREEN\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 39072856,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"green\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.34\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 518995019,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/518995019\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 1,\n        \"fulfillable_quantity\": 1,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - red\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008RED\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 49148385,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"red\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 703073504,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - black\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008BLACK\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 457924702,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"black\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      }\n    ],\n    \"payment_terms\": null,\n    \"refunds\": [\n      {\n        \"id\": 509562969,\n        \"admin_graphql_api_id\": \"gid://shopify/Refund/509562969\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"note\": \"it broke during shipping\",\n        \"order_id\": 450789469,\n        \"processed_at\": \"2025-07-01T14:37:24-04:00\",\n        \"restock\": true,\n        \"total_additional_fees_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"total_duties_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"user_id\": 548380009,\n        \"order_adjustments\": [],\n        \"transactions\": [\n          {\n            \"id\": 179259969,\n            \"admin_graphql_api_id\": \"gid://shopify/OrderTransaction/179259969\",\n            \"amount\": \"209.00\",\n            \"authorization\": \"authorization-key\",\n            \"created_at\": \"2005-08-05T12:59:12-04:00\",\n            \"currency\": \"USD\",\n            \"device_id\": null,\n            \"error_code\": null,\n            \"gateway\": \"bogus\",\n            \"kind\": \"refund\",\n            \"location_id\": null,\n            \"message\": null,\n            \"order_id\": 450789469,\n            \"parent_id\": 801038806,\n            \"payment_id\": \"#1001.3\",\n            \"processed_at\": \"2005-08-05T12:59:12-04:00\",\n            \"receipt\": {},\n            \"source_name\": \"web\",\n            \"status\": \"success\",\n            \"test\": false,\n            \"user_id\": null\n          }\n        ],\n        \"refund_line_items\": [\n          {\n            \"id\": 104689539,\n            \"line_item_id\": 703073504,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.66,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 703073504,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - black\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008BLACK\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 457924702,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"black\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.33\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          },\n          {\n            \"id\": 709875399,\n            \"line_item_id\": 466157049,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.67,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 466157049,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - green\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [\n                {\n                  \"name\": \"Custom Engraving Front\",\n                  \"value\": \"Happy Birthday\"\n                },\n                {\n                  \"name\": \"Custom Engraving Back\",\n                  \"value\": \"Merry Christmas\"\n                }\n              ],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008GREEN\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 39072856,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"green\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.34\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          }\n        ],\n        \"duties\": [],\n        \"additional_fees\": []\n      }\n    ],\n    \"shipping_address\": {\n      \"first_name\": \"Bob\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+1(502)-459-2181\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Norman\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Bob Norman\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"shipping_lines\": [\n      {\n        \"id\": 369256396,\n        \"carrier_identifier\": null,\n        \"code\": \"Free Shipping\",\n        \"discounted_price\": \"0.00\",\n        \"discounted_price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"is_removed\": false,\n        \"phone\": null,\n        \"price\": \"0.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"requested_fulfillment_service_id\": null,\n        \"source\": \"shopify\",\n        \"title\": \"Free Shipping\",\n        \"tax_lines\": [],\n        \"discount_allocations\": []\n      }\n    ]\n  },\n  {\n    \"id\": 450789469,\n    \"admin_graphql_api_id\": \"gid://shopify/Order/450789469\",\n    \"app_id\": null,\n    \"browser_ip\": \"0.0.0.0\",\n    \"buyer_accepts_marketing\": false,\n    \"cancel_reason\": null,\n    \"cancelled_at\": null,\n    \"cart_token\": \"68778783ad298f1c80c3bafcddeea02f\",\n    \"checkout_id\": 901414060,\n    \"checkout_token\": \"bd5a8aa1ecd019dd3520ff791ee3a24c\",\n    \"client_details\": {\n      \"accept_language\": null,\n      \"browser_height\": null,\n      \"browser_ip\": \"0.0.0.0\",\n      \"browser_width\": null,\n      \"session_hash\": null,\n      \"user_agent\": null\n    },\n    \"closed_at\": null,\n    \"confirmation_number\": null,\n    \"confirmed\": true,\n    \"contact_email\": \"bob.norman@mail.example.com\",\n    \"created_at\": \"2008-01-10T11:00:00-05:00\",\n    \"currency\": \"USD\",\n    \"current_subtotal_price\": \"195.67\",\n    \"current_subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"195.67\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_additional_fees_set\": null,\n    \"current_total_discounts\": \"3.33\",\n    \"current_total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.33\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_duties_set\": null,\n    \"current_total_price\": \"199.65\",\n    \"current_total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"199.65\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"current_total_tax\": \"3.98\",\n    \"current_total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"3.98\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"customer_locale\": null,\n    \"device_id\": null,\n    \"discount_codes\": [\n      {\n        \"code\": \"TENOFF\",\n        \"amount\": \"10.00\",\n        \"type\": \"fixed_amount\"\n      }\n    ],\n    \"duties_included\": false,\n    \"email\": \"bob.norman@mail.example.com\",\n    \"estimated_taxes\": false,\n    \"financial_status\": \"partially_refunded\",\n    \"fulfillment_status\": null,\n    \"landing_site\": \"http://www.example.com?source=abc\",\n    \"landing_site_ref\": \"abc\",\n    \"location_id\": null,\n    \"merchant_business_entity_id\": \"MTU0ODM4MDAwOQ\",\n    \"merchant_of_record_app_id\": null,\n    \"name\": \"#1001\",\n    \"note\": null,\n    \"note_attributes\": [\n      {\n        \"name\": \"custom engraving\",\n        \"value\": \"Happy Birthday\"\n      },\n      {\n        \"name\": \"colour\",\n        \"value\": \"green\"\n      }\n    ],\n    \"number\": 1,\n    \"order_number\": 1001,\n    \"order_status_url\": \"https://jsmith.myshopify.com/548380009/orders/b1946ac92492d2347c6235b4d2611184/authenticate?key=imasecretipod\",\n    \"original_total_additional_fees_set\": null,\n    \"original_total_duties_set\": null,\n    \"payment_gateway_names\": [\n      \"bogus\"\n    ],\n    \"phone\": \"+557734881234\",\n    \"po_number\": \"ABC123\",\n    \"presentment_currency\": \"USD\",\n    \"processed_at\": \"2008-01-10T11:00:00-05:00\",\n    \"reference\": \"fhwdgads\",\n    \"referring_site\": \"http://www.otherexample.com\",\n    \"source_identifier\": \"fhwdgads\",\n    \"source_name\": \"web\",\n    \"source_url\": null,\n    \"subtotal_price\": \"597.00\",\n    \"subtotal_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"tags\": \"\",\n    \"tax_exempt\": false,\n    \"tax_lines\": [\n      {\n        \"price\": \"11.94\",\n        \"rate\": 0.06,\n        \"title\": \"State Tax\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"11.94\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"channel_liable\": null\n      }\n    ],\n    \"taxes_included\": false,\n    \"test\": false,\n    \"token\": \"b1946ac92492d2347c6235b4d2611184\",\n    \"total_cash_rounding_payment_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_cash_rounding_refund_adjustment_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_discounts\": \"10.00\",\n    \"total_discounts_set\": {\n      \"shop_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"10.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_line_items_price\": \"597.00\",\n    \"total_line_items_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"597.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_outstanding\": \"0.00\",\n    \"total_price\": \"598.94\",\n    \"total_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"598.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_shipping_price_set\": {\n      \"shop_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"0.00\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tax\": \"11.94\",\n    \"total_tax_set\": {\n      \"shop_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      },\n      \"presentment_money\": {\n        \"amount\": \"11.94\",\n        \"currency_code\": \"USD\"\n      }\n    },\n    \"total_tip_received\": \"0.00\",\n    \"total_weight\": 0,\n    \"updated_at\": \"2008-01-10T11:00:00-05:00\",\n    \"user_id\": null,\n    \"billing_address\": {\n      \"first_name\": \"Bob\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+1(502)-459-2181\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Norman\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Bob Norman\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"customer\": {\n      \"id\": 207119551,\n      \"email\": \"bob.norman@mail.example.com\",\n      \"created_at\": \"2025-07-01T14:37:24-04:00\",\n      \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n      \"first_name\": \"Bob\",\n      \"last_name\": \"Norman\",\n      \"state\": \"disabled\",\n      \"note\": null,\n      \"verified_email\": true,\n      \"multipass_identifier\": null,\n      \"tax_exempt\": false,\n      \"phone\": \"+16136120707\",\n      \"email_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": null,\n        \"consent_updated_at\": \"2004-06-13T11:57:11-04:00\"\n      },\n      \"sms_marketing_consent\": {\n        \"state\": \"not_subscribed\",\n        \"opt_in_level\": \"single_opt_in\",\n        \"consent_updated_at\": \"2024-01-01T07:00:00-05:00\",\n        \"consent_collected_from\": \"OTHER\"\n      },\n      \"tags\": \"Léon, Noël\",\n      \"currency\": \"USD\",\n      \"tax_exemptions\": [],\n      \"admin_graphql_api_id\": \"gid://shopify/Customer/207119551\",\n      \"default_address\": {\n        \"id\": 207119551,\n        \"customer_id\": 207119551,\n        \"first_name\": null,\n        \"last_name\": null,\n        \"company\": null,\n        \"address1\": \"Chestnut Street 92\",\n        \"address2\": \"\",\n        \"city\": \"Louisville\",\n        \"province\": \"Kentucky\",\n        \"country\": \"United States\",\n        \"zip\": \"40202\",\n        \"phone\": \"555-625-1199\",\n        \"name\": \"\",\n        \"province_code\": \"KY\",\n        \"country_code\": \"US\",\n        \"country_name\": \"United States\",\n        \"default\": true\n      }\n    },\n    \"discount_applications\": [\n      {\n        \"target_type\": \"line_item\",\n        \"type\": \"discount_code\",\n        \"value\": \"10.0\",\n        \"value_type\": \"fixed_amount\",\n        \"allocation_method\": \"across\",\n        \"target_selection\": \"all\",\n        \"code\": \"TENOFF\"\n      }\n    ],\n    \"fulfillments\": [\n      {\n        \"id\": 255858046,\n        \"admin_graphql_api_id\": \"gid://shopify/Fulfillment/255858046\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"location_id\": 655441491,\n        \"name\": \"#1001.0\",\n        \"order_id\": 450789469,\n        \"origin_address\": {},\n        \"receipt\": {\n          \"testcase\": true,\n          \"authorization\": \"123456\"\n        },\n        \"service\": \"manual\",\n        \"shipment_status\": \"in_transit\",\n        \"status\": \"failure\",\n        \"tracking_company\": \"USPS\",\n        \"tracking_number\": \"1Z1234512345123456\",\n        \"tracking_numbers\": [\n          \"1Z1234512345123456\"\n        ],\n        \"tracking_url\": \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\",\n        \"tracking_urls\": [\n          \"https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=1Z1234512345123456\"\n        ],\n        \"updated_at\": \"2025-07-01T14:37:24-04:00\",\n        \"line_items\": [\n          {\n            \"id\": 466157049,\n            \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n            \"attributed_staffs\": [],\n            \"current_quantity\": 0,\n            \"fulfillable_quantity\": 0,\n            \"fulfillment_service\": \"manual\",\n            \"fulfillment_status\": null,\n            \"gift_card\": false,\n            \"grams\": 200,\n            \"name\": \"IPod Nano - 8gb - green\",\n            \"price\": \"199.00\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"199.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"product_exists\": true,\n            \"product_id\": 632910392,\n            \"properties\": [\n              {\n                \"name\": \"Custom Engraving Front\",\n                \"value\": \"Happy Birthday\"\n              },\n              {\n                \"name\": \"Custom Engraving Back\",\n                \"value\": \"Merry Christmas\"\n              }\n            ],\n            \"quantity\": 1,\n            \"requires_shipping\": true,\n            \"sku\": \"IPOD2008GREEN\",\n            \"taxable\": true,\n            \"title\": \"IPod Nano - 8gb\",\n            \"total_discount\": \"0.00\",\n            \"total_discount_set\": {\n              \"shop_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"0.00\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"variant_id\": 39072856,\n            \"variant_inventory_management\": \"shopify\",\n            \"variant_title\": \"green\",\n            \"vendor\": null,\n            \"tax_lines\": [\n              {\n                \"channel_liable\": null,\n                \"price\": \"3.98\",\n                \"price_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.98\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"rate\": 0.06,\n                \"title\": \"State Tax\"\n              }\n            ],\n            \"duties\": [],\n            \"discount_allocations\": [\n              {\n                \"amount\": \"3.34\",\n                \"amount_set\": {\n                  \"shop_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  },\n                  \"presentment_money\": {\n                    \"amount\": \"3.34\",\n                    \"currency_code\": \"USD\"\n                  }\n                },\n                \"discount_application_index\": 0\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"line_items\": [\n      {\n        \"id\": 466157049,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - green\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [\n          {\n            \"name\": \"Custom Engraving Front\",\n            \"value\": \"Happy Birthday\"\n          },\n          {\n            \"name\": \"Custom Engraving Back\",\n            \"value\": \"Merry Christmas\"\n          }\n        ],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008GREEN\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 39072856,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"green\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.34\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.34\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 518995019,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/518995019\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 1,\n        \"fulfillable_quantity\": 1,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - red\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008RED\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 49148385,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"red\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      },\n      {\n        \"id\": 703073504,\n        \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n        \"attributed_staffs\": [],\n        \"current_quantity\": 0,\n        \"fulfillable_quantity\": 0,\n        \"fulfillment_service\": \"manual\",\n        \"fulfillment_status\": null,\n        \"gift_card\": false,\n        \"grams\": 200,\n        \"name\": \"IPod Nano - 8gb - black\",\n        \"price\": \"199.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"199.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"product_exists\": true,\n        \"product_id\": 632910392,\n        \"properties\": [],\n        \"quantity\": 1,\n        \"requires_shipping\": true,\n        \"sku\": \"IPOD2008BLACK\",\n        \"taxable\": true,\n        \"title\": \"IPod Nano - 8gb\",\n        \"total_discount\": \"0.00\",\n        \"total_discount_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"variant_id\": 457924702,\n        \"variant_inventory_management\": \"shopify\",\n        \"variant_title\": \"black\",\n        \"vendor\": null,\n        \"tax_lines\": [\n          {\n            \"channel_liable\": null,\n            \"price\": \"3.98\",\n            \"price_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"rate\": 0.06,\n            \"title\": \"State Tax\"\n          }\n        ],\n        \"duties\": [],\n        \"discount_allocations\": [\n          {\n            \"amount\": \"3.33\",\n            \"amount_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.33\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"discount_application_index\": 0\n          }\n        ]\n      }\n    ],\n    \"payment_terms\": null,\n    \"refunds\": [\n      {\n        \"id\": 509562969,\n        \"admin_graphql_api_id\": \"gid://shopify/Refund/509562969\",\n        \"created_at\": \"2025-07-01T14:37:24-04:00\",\n        \"note\": \"it broke during shipping\",\n        \"order_id\": 450789469,\n        \"processed_at\": \"2025-07-01T14:37:24-04:00\",\n        \"restock\": true,\n        \"total_additional_fees_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"total_duties_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"user_id\": 548380009,\n        \"order_adjustments\": [],\n        \"transactions\": [\n          {\n            \"id\": 179259969,\n            \"admin_graphql_api_id\": \"gid://shopify/OrderTransaction/179259969\",\n            \"amount\": \"209.00\",\n            \"authorization\": \"authorization-key\",\n            \"created_at\": \"2005-08-05T12:59:12-04:00\",\n            \"currency\": \"USD\",\n            \"device_id\": null,\n            \"error_code\": null,\n            \"gateway\": \"bogus\",\n            \"kind\": \"refund\",\n            \"location_id\": null,\n            \"message\": null,\n            \"order_id\": 450789469,\n            \"parent_id\": 801038806,\n            \"payment_id\": \"#1001.3\",\n            \"processed_at\": \"2005-08-05T12:59:12-04:00\",\n            \"receipt\": {},\n            \"source_name\": \"web\",\n            \"status\": \"success\",\n            \"test\": false,\n            \"user_id\": null\n          }\n        ],\n        \"refund_line_items\": [\n          {\n            \"id\": 104689539,\n            \"line_item_id\": 703073504,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.66,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.66\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 703073504,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/703073504\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - black\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008BLACK\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 457924702,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"black\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.33\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.33\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          },\n          {\n            \"id\": 709875399,\n            \"line_item_id\": 466157049,\n            \"location_id\": 487838322,\n            \"quantity\": 1,\n            \"restock_type\": \"legacy_restock\",\n            \"subtotal\": 195.67,\n            \"subtotal_set\": {\n              \"shop_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"195.67\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"total_tax\": 3.98,\n            \"total_tax_set\": {\n              \"shop_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              },\n              \"presentment_money\": {\n                \"amount\": \"3.98\",\n                \"currency_code\": \"USD\"\n              }\n            },\n            \"line_item\": {\n              \"id\": 466157049,\n              \"admin_graphql_api_id\": \"gid://shopify/LineItem/466157049\",\n              \"attributed_staffs\": [],\n              \"current_quantity\": 0,\n              \"fulfillable_quantity\": 0,\n              \"fulfillment_service\": \"manual\",\n              \"fulfillment_status\": null,\n              \"gift_card\": false,\n              \"grams\": 200,\n              \"name\": \"IPod Nano - 8gb - green\",\n              \"price\": \"199.00\",\n              \"price_set\": {\n                \"shop_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"199.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"product_exists\": true,\n              \"product_id\": 632910392,\n              \"properties\": [\n                {\n                  \"name\": \"Custom Engraving Front\",\n                  \"value\": \"Happy Birthday\"\n                },\n                {\n                  \"name\": \"Custom Engraving Back\",\n                  \"value\": \"Merry Christmas\"\n                }\n              ],\n              \"quantity\": 1,\n              \"requires_shipping\": true,\n              \"sku\": \"IPOD2008GREEN\",\n              \"taxable\": true,\n              \"title\": \"IPod Nano - 8gb\",\n              \"total_discount\": \"0.00\",\n              \"total_discount_set\": {\n                \"shop_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                },\n                \"presentment_money\": {\n                  \"amount\": \"0.00\",\n                  \"currency_code\": \"USD\"\n                }\n              },\n              \"variant_id\": 39072856,\n              \"variant_inventory_management\": \"shopify\",\n              \"variant_title\": \"green\",\n              \"vendor\": null,\n              \"tax_lines\": [\n                {\n                  \"channel_liable\": null,\n                  \"price\": \"3.98\",\n                  \"price_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.98\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"rate\": 0.06,\n                  \"title\": \"State Tax\"\n                }\n              ],\n              \"duties\": [],\n              \"discount_allocations\": [\n                {\n                  \"amount\": \"3.34\",\n                  \"amount_set\": {\n                    \"shop_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    },\n                    \"presentment_money\": {\n                      \"amount\": \"3.34\",\n                      \"currency_code\": \"USD\"\n                    }\n                  },\n                  \"discount_application_index\": 0\n                }\n              ]\n            }\n          }\n        ],\n        \"duties\": [],\n        \"additional_fees\": []\n      }\n    ],\n    \"shipping_address\": {\n      \"first_name\": \"Salah\",\n      \"address1\": \"Chestnut Street 92\",\n      \"phone\": \"+212643736231\",\n      \"city\": \"Louisville\",\n      \"zip\": \"40202\",\n      \"province\": \"Kentucky\",\n      \"country\": \"United States\",\n      \"last_name\": \"Eddine\",\n      \"address2\": \"\",\n      \"company\": null,\n      \"latitude\": 45.41634,\n      \"longitude\": -75.6868,\n      \"name\": \"Salah Eddine\",\n      \"country_code\": \"US\",\n      \"province_code\": \"KY\"\n    },\n    \"shipping_lines\": [\n      {\n        \"id\": 369256396,\n        \"carrier_identifier\": null,\n        \"code\": \"Free Shipping\",\n        \"discounted_price\": \"0.00\",\n        \"discounted_price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"is_removed\": false,\n        \"phone\": null,\n        \"price\": \"0.00\",\n        \"price_set\": {\n          \"shop_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          },\n          \"presentment_money\": {\n            \"amount\": \"0.00\",\n            \"currency_code\": \"USD\"\n          }\n        },\n        \"requested_fulfillment_service_id\": null,\n        \"source\": \"shopify\",\n        \"title\": \"Free Shipping\",\n        \"tax_lines\": [],\n        \"discount_allocations\": []\n      }\n    ]\n  }\n] ;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        -432
+      ],
+      "id": "25497025-e67f-49f2-8679-68b353d3524c",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many orders": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Etc/GMT",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ea3c9f10-4bb9-4123-844b-a71fa1983330",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "CWrVYGEyev0qkKxP",
+  "tags": []
+}

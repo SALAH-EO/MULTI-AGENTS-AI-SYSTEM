@@ -1,0 +1,85 @@
+@import "tailwindcss";
+/* Import styles.css - adjust the path based on where you place styles.css */
+@import "./styles.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: linear-gradient(
+  to top,
+  #a0cfd6,
+  #285e6b
+);
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0 !important; 
+  overflow: auto !important;
+}
+
+.toggle-container {
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  position: relative;
+}
+
+.toggle-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-300, #d1d5db);
+  border-radius: 9999px;
+  transition: background-color 0.3s;
+}
+
+.toggle-label::before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+  background-color: var(--green-500, #10b981);
+}
+
+.toggle-checkbox:checked + .toggle-label::before {
+  transform: translateX(20px);
+}
+
+nextjs-portal {
+  display: none;
+}
+  
+  

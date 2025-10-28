@@ -1,0 +1,765 @@
+{
+  "name": "ZenDesk Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "id": "={{ $('Webhook').item.json.body.ticketId }}",
+        "updateFields": {
+          "tags": "={{ [$('AI Agent1').item.json.output] }}"
+        }
+      },
+      "id": "06c81756-089d-4a6d-838f-19f5c5d3e482",
+      "name": "Zendesk - Tag Ticket",
+      "type": "n8n-nodes-base.zendesk",
+      "typeVersion": 1,
+      "position": [
+        400,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zendesk-ticket-created",
+        "options": {}
+      },
+      "id": "d5b3b8fe-cb66-4b4f-85c3-5115ceb045a9",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1120,
+        200
+      ],
+      "webhookId": "zendesk-ticket-created"
+    },
+    {
+      "parameters": {
+        "url": "=https://{{ $json.credentials.domain }}/api/v2/tickets.json?per_page=100",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.credentials.authHeader }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "name": "Fetch Tickets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -480,
+        820
+      ],
+      "id": "51c49d60-5ec7-42eb-8b2c-51bebae84fb9"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6addc233-92bb-4af8-8de5-21d70ba34e29",
+              "name": "email",
+              "value": "salaheddine.ouirra-etu@etu.univh2c.ma",
+              "type": "string"
+            },
+            {
+              "id": "d7ad6773-a93f-479b-a8f9-80272b0e2a16",
+              "name": "apiKey",
+              "value": "fEihmhq26m58QYlQkQmMYMZra3kmiopV7fvJsNxE",
+              "type": "string"
+            },
+            {
+              "id": "6a632586-1ed5-4f05-b31d-d4b2f5930ba7",
+              "name": "domain",
+              "value": "universithassaniidecasablanca3949.zendesk.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -880,
+        820
+      ],
+      "id": "5d108e53-88f6-4abf-87ca-f58623fe3c3c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * This node accepts Zendesk email and API key, then generates the Base64 encoded\n * authentication string required for Zendesk API requests.\n *\n * Input:\n * - email: Your Zendesk email address\n * - apiKey: Your Zendesk API token\n * \n * Output:\n * - encodedAuth: Base64 encoded authentication string\n * - authHeader: Complete Authorization header value\n * - credentials: Object containing all authentication details\n */\n\n// Get input data\nconst email = $input.first().json.email;\nconst apiKey = $input.first().json.apiKey;\nconst domain = $input.first().json.domain;\n\n// Format the credentials string (email/token:apiKey)\nconst credentialString = `${email}/token:${apiKey}`;\n\n// Base64 encode the credentials\nconst encodedAuth = Buffer.from(credentialString).toString('base64');\n\n// Create the full authorization header\nconst authHeader = `Basic ${encodedAuth}`;\n\n// Return the encoded values and full credentials object\nreturn {\n  json: {\n    encodedAuth,\n    authHeader,\n    credentials: {\n      domain,\n      email,\n      apiKey,\n      encodedAuth,\n      authHeader\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        820
+      ],
+      "id": "6d0bbbe5-5f57-4425-91f5-09d9a9700452",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract tickets from the response\nconst tickets = $input.first().json.body.tickets || [];\n\n// Create an array to hold the results\nconst results = [];\n\n// Process each ticket and create a separate item for each one\nif (tickets.length > 0) {\n  tickets.forEach(ticket => {\n    // Create a single object with all the ticket data\n    const processedTicket = {\n      'Ticket ID': ticket.id,\n      'Channel': ticket.via?.channel || '',\n      'Subject': ticket.subject || '',\n      'Description': ticket.description || '',\n      'Created Date': ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '',\n      'Updated Date': ticket.updated_at ? new Date(ticket.updated_at).toLocaleString() : '',\n      'Status': ticket.status || '',\n      'Priority': ticket.priority || 'none',\n      'Requester Email': ticket.via?.source?.from?.address || '',\n      'Total Tickets': tickets.length // Adding total count to each item for reference\n    };\n    \n    // Add this ticket as a separate item in the output array\n    results.push({ json: processedTicket });\n  });\n} else {\n  // If no tickets are found, return a single item with empty data\n  results.push({\n    json: {\n      'message': 'No tickets found',\n      'Total Tickets': 0\n    }\n  });\n}\n\n// Return an array of items instead of a nested structure\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        820
+      ],
+      "id": "35bab4eb-8546-42d3-b065-da3b085df3cf",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=https://{{ $('Edit Fields').item.json.domain }}/api/v2/tickets/{{ $json[\"Ticket ID\"] }}/comments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('Code').item.json.credentials.authHeader }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "name": "Fetch Tickets1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        220,
+        940
+      ],
+      "id": "ae2771e0-ee10-4d4e-8509-ef452710ac99"
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Dynamic Code Node to extract ticket subject and comments\n// Input: Zendesk API response with ticket and comments in various structures\n// Output: Single string with ticket subject and all comments from customers and agents\n\n// Get input data - handle both structured and unstructured inputs\nconst inputData = $input.first().json;\nconst results = [];\n\ntry {\n  // Initialize output object\n  const output = {};\n  \n  // Initialize variables to store ticket info and comments\n  let ticketSubject = 'No Subject';\n  let comments = [];\n  \n  // Dynamically find ticket subject and comments based on structure\n  // Check if data is in body format\n  if (inputData.body) {\n    if (inputData.body.ticket) {\n      ticketSubject = inputData.body.ticket.subject || 'No Subject';\n    }\n    if (inputData.body.comments && Array.isArray(inputData.body.comments)) {\n      comments = inputData.body.comments;\n    }\n  } \n  // Check if data has a ticket field at top level\n  else if (inputData.ticket) {\n    ticketSubject = inputData.ticket.subject || 'No Subject';\n    if (inputData.comments && Array.isArray(inputData.comments)) {\n      comments = inputData.comments;\n    }\n  }\n  // Check if comments are directly at the top level (like in your second example)\n  else if (inputData.comments && Array.isArray(inputData.comments)) {\n    comments = inputData.comments;\n    \n    // If we have an originalItem that might contain ticket info\n    if (inputData.originalItem && inputData.originalItem.ticket) {\n      ticketSubject = inputData.originalItem.ticket.subject || 'No Subject';\n    }\n  }\n  // Check if the array itself is the comments (for completely different structure)\n  else if (Array.isArray(inputData)) {\n    comments = inputData.filter(item => item.type === 'Comment' || item.body);\n  }\n  // Check if this is actually an error response with originalItem containing what we need\n  else if (inputData.error && inputData.originalItem) {\n    if (inputData.originalItem.ticket) {\n      ticketSubject = inputData.originalItem.ticket.subject || 'No Subject';\n    }\n    if (inputData.originalItem.comments && Array.isArray(inputData.originalItem.comments)) {\n      comments = inputData.originalItem.comments;\n    }\n  }\n  \n  // If we still haven't found comments, try one more level of nesting\n  if (comments.length === 0 && inputData.originalItem) {\n    if (Array.isArray(inputData.originalItem)) {\n      comments = inputData.originalItem.filter(item => item.type === 'Comment' || item.body);\n    }\n  }\n  \n  // Initialize the conversation string with the ticket subject\n  let conversationText = `Ticket: ${ticketSubject}\\n\\n`;\n  \n  // Process comments if found\n  if (comments.length > 0) {\n    comments.forEach((comment) => {\n      // Skip if comment has no body or is not public (internal note)\n      if (!comment || !comment.body || comment.public === false) {\n        return;\n      }\n      \n      // Determine author type based on available data\n      let isCustomer = false;\n      \n      // Check via.channel if it exists\n      if (comment.via && comment.via.channel) {\n        isCustomer = comment.via.channel === 'email' || \n                     comment.via.channel === 'web' ||\n                     (comment.via.source && comment.via.source.from);\n      }\n      \n      // If no via info, try to determine from other fields\n      if (!comment.via && comment.author_id) {\n        // We'd need a more robust way to determine this, but for now\n        // we'll consider the first comment as customer if no other info\n        isCustomer = comments.indexOf(comment) === 0;\n      }\n      \n      let authorType = isCustomer ? 'Customer' : 'Agent';\n      \n      // Try to get author name from different possible locations\n      let authorName = 'Unknown';\n      \n      if (isCustomer && comment.via && comment.via.source && comment.via.source.from) {\n        authorName = comment.via.source.from.name || comment.via.source.from.address || 'Unknown';\n      } else if (comment.author && comment.author.name) {\n        authorName = comment.author.name;\n      } else if (comment.author_id) {\n        authorName = `ID: ${comment.author_id}`;\n      }\n      \n      // Format the comment with author information\n      // Use plain_body if available, otherwise use regular body\n      const commentText = comment.plain_body || comment.body || '';\n      \n      conversationText += `${authorType} (${authorName}): ${commentText.trim()}\\n\\n`;\n    });\n  } else {\n    conversationText += 'No comments found for this ticket.\\n';\n  }\n  \n  // Add the conversation string to output\n  output.ticketConversation = conversationText;\n  \n  // Try to find ticket ID\n  let ticketId = null;\n  if (inputData.body && inputData.body.ticket && inputData.body.ticket.id) {\n    ticketId = inputData.body.ticket.id;\n  } else if (inputData.ticket && inputData.ticket.id) {\n    ticketId = inputData.ticket.id;\n  } else if (inputData.originalItem && inputData.originalItem.ticket && inputData.originalItem.ticket.id) {\n    ticketId = inputData.originalItem.ticket.id;\n  }\n  \n  if (ticketId) {\n    output.ticketId = ticketId;\n  }\n  \n  // Return the processed data\n  results.push({ json: output });\n  \n} catch (error) {\n  // Handle errors gracefully\n  results.push({\n    json: {\n      error: true,\n      message: `Error processing data: ${error.message}`,\n      originalData: inputData\n    }\n  });\n}\n\n// Return the processed results\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        940
+      ],
+      "id": "efd7705e-a9d7-4ca5-9fbc-1c25d3bf7f8a",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM",
+          "mode": "list",
+          "cachedResultName": "ZenDesk",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ticket ID": "={{ $('Loop Over Items').item.json[\"Ticket ID\"] }}",
+            "Question": "={{ $json.output.question }}",
+            "Answer": "={{ $json.output.answer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ticket ID",
+              "displayName": "Ticket ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answer",
+              "displayName": "Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1020,
+        940
+      ],
+      "id": "896571a4-bc62-473a-b019-9f40d9b51531",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -60,
+        820
+      ],
+      "id": "497fb31c-9478-4f0e-bbff-c4169c8ad8e7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ticket Details: {{ $json.ticketConversation }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "## Role\nYou are a customer support knowledge curator. Your job is to analyze customer support tickets and transform them into concise FAQ entries optimized for a Retrieval Augmented Generation (RAG) database.\n\n## Context\nYou work for a Saas Agency called OFFZONE. specializes in software and tech solutions .\n\n## Task\n1. Carefully read the entire ticket conversation.\n2. Identify the core issue or main question being addressed.\n3. Extract or formulate the concise resolution provided by support.\n4. Create a single, concise FAQ entry optimized for RAG retrieval.\n\n## RAG Optimization Requirements\nYour FAQ entries will be:\n- Added to a RAG vector database for AI retrieval\n- Used to provide context for AI support systems\n- Kept concise for efficient embedding and retrieval\nTherefore, ensure your entries:\n- Are brief and focused on the essential information (aim for 2-3 sentences in the answer when possible)\n- Include specific product information when directly relevant\n- Preserve all URLs, images, and resource links from the original ticket\n- Format image links as markdown: `![description](image_url)`\n- Format URLs as markdown: `[link text](url)`\n- Format the entire answer in markdown format\n- Avoid redundant or verbose explanations\n\n## Output\nYour output should be in the following JSON format:\n\n{\n  \"question\": \"string\",\n  \"answer\": \"string\"\n}\n\n## Example\nInput ticket about a broken tent pole with a reference to a YouTube video might generate:\n\n{\n  \"question\": \"How do I replace a broken tent pole?\",\n  \"answer\": \"Order a new pole replacement kit ($45) and install it yourself or request professional repair ($35). For self-installation, watch [this tutorial video](https://youtube.com/bartscamping/tentpole) or check our [support documentation](https://support.bartscamping.com/tent-pole-repair).\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        660,
+        940
+      ],
+      "id": "3f7ac1b6-5acc-4803-9621-577c314ec9c1",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"question\": \"string\",\n\t\"answer\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        840,
+        1160
+      ],
+      "id": "b988c9ff-3c45-4ece-9292-3293c7f737a5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        660,
+        1160
+      ],
+      "id": "91fed23d-467a-406f-836e-c3797c1ea913",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ticket from: {{ $json.body.requester.name }}\\nSubject: {{ $json.body.subject }}\\nDescription: {{ $json.body.description }}\\nComments : {{ $json.body.comments }}",
+        "options": {
+          "systemMessage": "You are a customer service AI agent. First, classify this ticket by product category. Available products are: Product A (software), Product B (hardware), Product C (subscription service). Return Only the Category with no explanations ."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -600,
+        220
+      ],
+      "id": "983f01e1-7bcf-4936-a0aa-9046ab51682e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": "={{ $('Webhook').item.json.body.ticketId }}",
+        "updateFields": {
+          "internalNote": "={{ $json.output }}"
+        }
+      },
+      "type": "n8n-nodes-base.zendesk",
+      "typeVersion": 1,
+      "position": [
+        420,
+        280
+      ],
+      "id": "7106929f-d00f-476f-be76-6db49cc35ba0",
+      "name": "Suggest Response"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        440
+      ],
+      "id": "c54c1a36-e55e-4da6-a23f-1a46a24bb0f1",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ticket from: {{ $('Webhook').item.json.body.requester.name }}\\nSubject:{{ $('Webhook').item.json.body.subject }} \\nDescription: {{ $('Webhook').item.json.body.description }} \\n Product type : {{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a customer service AI agent. provide a helpful response based on the product type . Be brief but professional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -100,
+        220
+      ],
+      "id": "5b8ea0d7-60f5-4b84-8a22-2b7c4b12cb65",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        400
+      ],
+      "id": "13484ba0-ba3f-42c4-82c6-3c6d3ccc87d6",
+      "name": "Ollama Chat Model2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM",
+          "mode": "list",
+          "cachedResultName": "ZenDesk",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit#gid=0"
+        },
+        "numberToDelete": 10000
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1140,
+        820
+      ],
+      "id": "7670425d-dc91-4cc2-9e81-5c86fcfe28eb",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM",
+          "mode": "list",
+          "cachedResultName": "ZenDesk",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lfMu1vLDI6ZN8yY_O1-dWymMDRI-j-hVtdtuu8rd8VM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        100,
+        420
+      ],
+      "id": "292f1092-ab70-4284-8310-3564eb201919",
+      "name": "Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2ayYmQgMXz3pYiB9",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyMonth",
+              "hour": 22
+            }
+          ]
+        }
+      },
+      "name": "Monthly Knowledge Update",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1460,
+        820
+      ],
+      "id": "52c82249-3970-4885-b6a4-ce8a392ee64c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://app:8000/webhook/n8n_execution_data",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"auditId\": \"{{ $workflow.id }}_{{ $execution.id }}\",\n  \"workflowId\": \"{{ $workflow.id }}\",\n  \"nodeName\": \"node\",\n  \"executionId\": \"{{ $execution.id }}\",\n  \"timestamp\": \"{{ $now }}\",\n  \"input\": \"No input\",\n  \"output\": {{$json.toJsonString()}},\n  \"status\": \"{{ $json.status || 'success' }}\",\n  \"finished\": {{ $json.finished || true }}\n}",
+        "options": {}
+      },
+      "id": "fbe638ce-20a5-4c05-858d-3abbd39e4501",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        760,
+        260
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Tickets": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Fetch Tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Tickets1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Fetch Tickets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Zendesk - Tag Ticket",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Suggest Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monthly Knowledge Update": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zendesk - Tag Ticket": {
+      "main": [
+        []
+      ]
+    },
+    "Suggest Response": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "saveExecutionProgress": false,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 3600,
+    "timezone": "UTC",
+    "executionOrder": "v1"
+  },
+  "versionId": "5fdef8af-da57-43b8-a7be-ad5c43075451",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "hh1nBdyCdAw8s8lh",
+  "tags": []
+}
