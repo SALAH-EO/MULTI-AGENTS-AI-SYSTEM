@@ -728,53 +728,6 @@ Ollama makes it possible to experiment with local LLMs rather than depending exc
 
 Redis and WebSocket-based communication make it possible to provide live execution information to the frontend.
 
----
-
-# 📌 Current Architecture Note
-
-The repository's original description refers to a "Python backend", but the current implementation uses **FastAPI** rather than Flask.
-
-The backend explicitly imports and initializes FastAPI:
-
-```python
-from fastapi import FastAPI
-...
-app = FastAPI()
-```
-
-and the Docker configuration exposes it on port `8000`.
-
-Therefore, the current architecture is more accurately described as:
-
-> **n8n-orchestrated multi-agent AI system with a Python/FastAPI backend and Next.js frontend.**
-
----
-
-# 🚀 Project Highlights
-
-* 🤖 Multi-agent AI architecture
-* 🔄 n8n-based agent orchestration
-* 🧠 Local LLM support through Ollama
-* 🔎 Vector database support through Qdrant
-* ⚡ Real-time execution monitoring
-* 🔌 External API and service integrations
-* 🐍 Python/FastAPI backend
-* ⚛️ Next.js frontend
-* 🔐 JWT-based authentication
-* 👥 User and access management
-* 📊 Workflow and execution monitoring
-* 🐳 Fully containerized development environment
-* 🗄️ PostgreSQL + MongoDB + Redis infrastructure
-* 🎮 CPU and NVIDIA GPU execution profiles
-
----
-
-# 📂 Repository
-
-**GitHub:**
-https://github.com/SALAH-EO/MULTI-AGENTS-AI-SYSTEM
-
-The repository contains the complete Docker environment, frontend, Python backend, shared resources and n8n workflow backups required to reproduce the platform locally.
 
 ---
 
